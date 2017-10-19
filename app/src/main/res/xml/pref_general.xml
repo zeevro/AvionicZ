@@ -1,0 +1,51 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="altitude_low_pass_alpha"
+        android:title="@string/setting_altitude_low_pass_alpha_title"
+        android:summary="@string/setting_altitude_low_pass_alpha_summary"
+        android:inputType="numberDecimal"
+        android:defaultValue="0.25"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="vertical_speed_low_pass_alpha"
+        android:title="@string/setting_vertical_speed_low_pass_alpha_title"
+        android:summary="@string/setting_vertical_speed_low_pass_alpha_summary"
+        android:inputType="numberDecimal"
+        android:defaultValue="0.05"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="sea_level_pressure_adjust_sensitivity"
+        android:title="@string/setting_sea_level_pressure_adjust_sensitivity_title"
+        android:summary="@string/setting_sea_level_pressure_adjust_sensitivity_summary"
+        android:inputType="number"
+        android:defaultValue="130"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="sea_level_pressure_calibration"
+        android:title="@string/setting_sea_level_pressure_calibration_title"
+        android:summary="@string/setting_sea_level_pressure_calibration_summary"
+        android:inputType="numberSigned|numberDecimal"
+        android:defaultValue="0"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="vertical_speed_color_max"
+        android:title="@string/setting_vertical_speed_color_max_title"
+        android:summary="@string/setting_vertical_speed_color_max_summary"
+        android:inputType="number"
+        android:defaultValue="100"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="waypoint_list_font_size"
+        android:title="@string/setting_waypoint_list_font_size_title"
+        android:summary="@string/setting_waypoint_list_font_size_summary"
+        android:inputType="number"
+        android:defaultValue="40"
+        android:selectAllOnFocus="true" />
+
+</PreferenceScreen>
