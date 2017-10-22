@@ -19,10 +19,11 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -34,6 +35,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -46,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -60,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private static final int GPX_FILE_REQUEST_CODE = 12;
 
     private class WaypointArrayAdapter extends ArrayAdapter<WayPoint> {
-        WaypointArrayAdapter(@NonNull Context context, @LayoutRes int resource) {
-            super(context, resource);
+        WaypointArrayAdapter(Context context, int resource, List<WayPoint> objects) {
+            super(context, resource, objects);
         }
 
         @NonNull
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private SharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView;
+    private TextView altView, altDecView, vsiView, bearingView, distanceView, statusView;
     private Button pressureButton, waypointButton;
 
     private float lastAltitude, seaLevelPressureCalibration;
@@ -205,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         waypointButton = (Button) findViewById(R.id.waypointButton);
         bearingView = (TextView) findViewById(R.id.bearingValue);
         distanceView = (TextView) findViewById(R.id.distanceValue);
+        statusView = (TextView) findViewById(R.id.gpsStatus);
 
         pressureButton.setOnClickListener(this);
         pressureButton.setOnTouchListener(this);
@@ -330,8 +334,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 final Dialog waypointPicker = new Dialog(this);
                 waypointPicker.setContentView(R.layout.waypoint_picker);
 
-                ListView waypointsListView = waypointPicker.findViewById(R.id.waypoints_list);
-                WaypointArrayAdapter waypointsAdapter = new WaypointArrayAdapter(waypointPicker.getContext(), android.R.layout.select_dialog_item);
+                final ListView waypointsListView = waypointPicker.findViewById(R.id.waypoints_list);
                 if (currentLocation != null) {
                     //noinspection Since15
                     waypoints.sort(new Comparator<WayPoint>() {
@@ -341,9 +344,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         }
                     });
                 }
-                for (WayPoint wpt : waypoints) {
-                    waypointsAdapter.add(wpt);
-                }
+                final WaypointArrayAdapter waypointsAdapter = new WaypointArrayAdapter(waypointPicker.getContext(), android.R.layout.select_dialog_item, new ArrayList<>(waypoints));
                 waypointsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -356,7 +357,27 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 });
                 waypointsListView.setAdapter(waypointsAdapter);
 
-                waypointPicker.findViewById(R.id.waypoints_cancel_button).setOnClickListener(new OnClickListener() {
+                ((EditText)waypointPicker.findViewById(R.id.waypoints_search)).addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        String filter = charSequence.toString().toLowerCase();
+                        waypointsAdapter.clear();
+                        for (WayPoint wp : waypoints) {
+                            Log.d(TAG, wp.getName().toLowerCase());
+                            if (wp.getName().toLowerCase().contains(filter)) {
+                                waypointsAdapter.add(wp);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) { }
+                });
+
+                waypointPicker.findViewById(R.id.waypoints_clear_button).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         waypointLocation.reset();
@@ -439,14 +460,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
+    public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO: Use this to put up a little accuracy/availability flag on the GUI.
-        Log.d(TAG, "Status: " + s + ", " + i);
+        Log.d(TAG, "Status: " + provider + ", " + status);
     }
 
     @Override
-    public void onProviderEnabled(String s) {
-        Log.d(TAG, "Provider Enabled: " + s);
+    public void onProviderEnabled(String provider) {
+        Log.d(TAG, "Provider Enabled: " + provider);
     }
 
     @Override

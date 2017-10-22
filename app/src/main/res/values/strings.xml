@@ -12,6 +12,7 @@
 
     <string name="waypoint_button">Waypoint</string>
     <string name="waypoint_picker_clear_button">Clear</string>
+    <string name="waypoints_search_hint">Search</string>
 
     <string name="decimal_separator">.</string>
 

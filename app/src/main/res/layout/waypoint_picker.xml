@@ -4,16 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <EditText
+        android:id="@+id/waypoints_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textNoSuggestions"
+        android:hint="@string/waypoints_search_hint" />
+
     <ListView
         android:id="@+id/waypoints_list"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:choiceMode="singleChoice"
-        android:fastScrollEnabled="true" />
+        android:choiceMode="singleChoice" />
 
     <Button
-        android:id="@+id/waypoints_cancel_button"
+        android:id="@+id/waypoints_clear_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center_vertical"

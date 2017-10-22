@@ -9,7 +9,6 @@ android {
         targetSdkVersion 26
         versionCode 10
         versionName "1.5"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -29,5 +28,4 @@ dependencies {
     compile 'com.android.support:design:26.+'
     compile 'com.android.support:support-v4:26.+'
     compile 'io.ticofab.androidgpxparser:parser:1.0.0'
-    testCompile 'junit:junit:4.12'
 }
