@@ -53,6 +53,7 @@
 
     <Button
         android:id="@+id/pressureButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Prsr"
@@ -64,6 +65,7 @@
 
     <Button
         android:id="@+id/minusOneButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0px"
@@ -75,6 +77,7 @@
 
     <Button
         android:id="@+id/minusTenButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0px"
@@ -86,6 +89,7 @@
 
     <Button
         android:id="@+id/plusOneButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0px"
@@ -97,6 +101,7 @@
 
     <Button
         android:id="@+id/plusTenButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0px"
@@ -108,6 +113,7 @@
 
     <Button
         android:id="@+id/waypointButton"
+        android:onClick="onClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/waypoint_button"
@@ -152,7 +158,6 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:textSize="20sp"
-        android:text="status"
         android:layout_marginRight="5sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintRight_toRightOf="@id/bearingArrow" />

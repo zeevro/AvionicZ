@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,6 +28,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
@@ -37,6 +40,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -70,14 +75,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            TextView view = new TextView(parent.getContext());
-            view.setTextSize(TypedValue.COMPLEX_UNIT_SP, getIntPreference("waypoint_list_font_size", 40));
-            view.setWidth(4000);
+            final LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View myView = inflater.inflate(R.layout.waypoint_entry, parent, false);
             WayPoint wpt = getItem(position);
-            if (wpt != null) {
-                view.setText(wpt.getName());
+
+            TextView textView = myView.findViewById(R.id.waypoint_entry_text);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, getIntPreference("waypoint_list_font_size", 40));
+            textView.setText(wpt.getName());
+            textView.setWidth(parent.getWidth());
+
+            ImageView imageView = myView.findViewById(R.id.waypoint_entry_image);
+            if (currentLocation != null) {
+                imageView.setImageDrawable(arrowDrawable);
+                imageView.setRotation(waypointBearing(currentLocation, wpt));
+                imageView.setMaxHeight((int)textView.getTextSize());
             }
-            return view;
+
+            return myView;
         }
     }
 
@@ -100,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private Location currentLocation = null, waypointLocation = new Location("waypoint");
 
     private BearingArrow bearingArrow;
+
+    private Drawable arrowDrawable;
 
     protected String getStringPreference(String name, String default_value) {
         String value = prefs.getString(name, null);
@@ -178,11 +194,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         return x * 0.000621371f;
     }
 
-    protected float waypointDistance(Location location, WayPoint wpt) {
+    protected @NonNull Location locationFromWaypoint(@NonNull WayPoint wpt) {
         Location wptLoc = new Location("waypoint");
         wptLoc.setLatitude(wpt.getLatitude());
         wptLoc.setLongitude(wpt.getLongitude());
-        return location.distanceTo(wptLoc);
+        return wptLoc;
+    }
+
+    protected float waypointDistance(@NonNull Location location, @NonNull WayPoint wpt) {
+        return location.distanceTo(locationFromWaypoint(wpt));
+    }
+
+    protected float waypointBearing(@NonNull Location location, @NonNull WayPoint wpt) {
+        return location.bearingTo(locationFromWaypoint(wpt)) - location.getBearing();
     }
 
     protected void setSeaLevelPressure(int newPressure) {
@@ -210,16 +234,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         distanceView = (TextView) findViewById(R.id.distanceValue);
         statusView = (TextView) findViewById(R.id.gpsStatus);
 
-        pressureButton.setOnClickListener(this);
         pressureButton.setOnTouchListener(this);
-        findViewById(R.id.minusTenButton).setOnClickListener(this);
-        findViewById(R.id.plusOneButton).setOnClickListener(this);
-        findViewById(R.id.minusOneButton).setOnClickListener(this);
-        findViewById(R.id.plusTenButton).setOnClickListener(this);
-        findViewById(R.id.waypointButton).setOnClickListener(this);
 
         ImageView arrowView = (ImageView)findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
+
+        arrowDrawable = getDrawable(R.drawable.arrow);
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, true);
 
@@ -230,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
         setSeaLevelPressure(prefs.getInt("sea_level_pressure", (int)SensorManager.PRESSURE_STANDARD_ATMOSPHERE));
 
-        vsiGradient = new ColorGradient(0xFFFF0000, vsiView.getCurrentTextColor(), 0xFF00FF00);
+        vsiGradient = new ColorGradient(Color.RED, vsiView.getCurrentTextColor(), Color.GREEN);
 
         String gpxFileUri = getStringPreference("gpx_file_uri", null);
         if (gpxFileUri != null) {
@@ -337,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 final ListView waypointsListView = waypointPicker.findViewById(R.id.waypoints_list);
                 if (currentLocation != null) {
                     //noinspection Since15
-                    waypoints.sort(new Comparator<WayPoint>() {
+                    Collections.sort(waypoints, new Comparator<WayPoint>() {
                         @Override
                         public int compare(WayPoint left, WayPoint right) {
                             return (int)(waypointDistance(currentLocation, left) - waypointDistance(currentLocation, right));
@@ -382,6 +402,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     public void onClick(View view) {
                         waypointLocation.reset();
                         waypointButton.setText(R.string.waypoint_button);
+                        distanceView.setText("");
+                        bearingView.setText("");
+                        bearingArrow.setAngle(0);
                         waypointPicker.dismiss();
                     }
                 });
