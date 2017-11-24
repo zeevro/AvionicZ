@@ -19,6 +19,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         ImageView arrowView = (ImageView)findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
 
-        arrowDrawable = getDrawable(R.drawable.arrow);
+        arrowDrawable = getResources().getDrawable(R.drawable.arrow);
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, true);
 
@@ -267,7 +268,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
         sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
 
-        requestPermissions(new String[]{ Manifest.permission.ACCESS_FINE_LOCATION }, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{ Manifest.permission.ACCESS_FINE_LOCATION }, 0);
+        } else {
+            onRequestPermissionsResult(0, new String[]{}, new int[]{PackageManager.PERMISSION_GRANTED});
+        }
 
         bearingArrow.startAnimation();
     }

@@ -24,7 +24,7 @@ class BearingArrow {
     private final float arrowSpeed = 0.25f;
 
     private void drawFrame() {
-        float θ = arrowCurrentAngle - PI / 2;
+        float θ = arrowCurrentAngle - TAU / 4;
         final float cX = mCanvas.getWidth() / 2, cY = mCanvas.getHeight() / 2;
         final float R = Math.min(cX, cY);
         final float r = R * 0.6f;
@@ -39,7 +39,7 @@ class BearingArrow {
 
         final float tr1 = R * 0.95f, tr2 = R * 0.75f, tr3 = R * 0.9f;
         int i;
-        for (θ = 0, i = 0; θ < TAU; θ += PI / 6, i++) {
+        for (θ = 0, i = 0; θ < TAU; θ += TAU / 12, i++) {
             if (i % 3 == 0) {
                 mCanvas.drawLine(cX + tr1 * (float) Math.cos(θ), cY + tr1 * (float) Math.sin(θ), cX + tr2 * (float) Math.cos(θ), cY + tr2 * (float) Math.sin(θ), mPaint);
             } else {
