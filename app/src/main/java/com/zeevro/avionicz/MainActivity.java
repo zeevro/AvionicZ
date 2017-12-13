@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             return;
         }
 
-        float b = (location.bearingTo(waypointLocation) - location.getBearing() + 360) % 360;
+        float b = (location.bearingTo(waypointLocation) - location.getBearing() + 2 * 360) % 360;
         bearingView.setText(String.format(getString(R.string.waypoint_angle), (int)b));
         distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(location.distanceTo(waypointLocation))));
         bearingArrow.setAngleDegrees(b);
