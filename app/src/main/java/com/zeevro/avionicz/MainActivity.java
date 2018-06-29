@@ -41,7 +41,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -98,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private SharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView, statusView;
+    private TextView altView, altDecView, vsiView, bearingView, distanceView, headingView;
     private Button pressureButton, waypointButton;
 
     private float lastAltitude, seaLevelPressureCalibration;
@@ -118,9 +117,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private Drawable arrowDrawable;
 
+    private boolean havePressureSensor = false;
+
     protected String getStringPreference(String name, String default_value) {
         String value = prefs.getString(name, null);
-        if (value == null || value.isEmpty()) {
+        if ((value == null) || value.isEmpty()) {
             return default_value;
         }
         return value;
@@ -218,6 +219,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         pressureButton.setText(String.valueOf(seaLevelPressure));
     }
 
+    @SuppressLint("SetTextI18n")
+    protected void setAltitudeIndicator(float altitude) {
+        altView.setText(String.valueOf((int)altitude));
+        altDecView.setText(getString(R.string.decimal_separator) + Math.abs((int)(altitude * 10 % 10)));
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -233,7 +241,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         waypointButton = (Button) findViewById(R.id.waypointButton);
         bearingView = (TextView) findViewById(R.id.bearingValue);
         distanceView = (TextView) findViewById(R.id.distanceValue);
-        statusView = (TextView) findViewById(R.id.gpsStatus);
+        headingView = (TextView) findViewById(R.id.headingValue);
+
+        havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
 
         pressureButton.setOnTouchListener(this);
 
@@ -257,16 +267,27 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (gpxFileUri != null) {
             loadWayPoints(Uri.parse(gpxFileUri));
         }
+
+        if (!havePressureSensor) {
+            vsiView.setText("---");
+            pressureButton.setEnabled(false);
+            findViewById(R.id.plusOneButton).setEnabled(false);
+            findViewById(R.id.plusTenButton).setEnabled(false);
+            findViewById(R.id.minusOneButton).setEnabled(false);
+            findViewById(R.id.minusTenButton).setEnabled(false);
+            Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-
-        Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
+        if (havePressureSensor) {
+            SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+            sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{ Manifest.permission.ACCESS_FINE_LOCATION }, 0);
@@ -284,8 +305,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
         locationManager.removeUpdates(this);
 
-        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        sensorManager.unregisterListener(this);
+        if (havePressureSensor) {
+            SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            sensorManager.unregisterListener(this);
+        }
 
         bearingArrow.stopAnimation();
     }
@@ -332,8 +355,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 lastAltitudeTimestamp = sensorEvent.timestamp;
                 int verticalSpeed = (int)(vsi * 60000000000L);
 
-                altView.setText(String.valueOf((int)altitude));
-                altDecView.setText(getString(R.string.decimal_separator) + Math.abs((int)(altitude * 10 % 10)));
+                setAltitudeIndicator(altitude);
+
                 vsiView.setText(String.valueOf(verticalSpeed));
                 vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float)vsiColorMax));
                 break;
@@ -419,6 +442,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent evt) {
         switch (view.getId()) {
@@ -475,14 +499,20 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void onLocationChanged(Location location) {
         currentLocation = location;
 
+        if (!havePressureSensor) {
+            setAltitudeIndicator((float)location.getAltitude());
+        }
+
+        headingView.setText(String.format(getString(R.string.angle), (int)location.getBearing()));
+
         if (waypointLocation.getLatitude() == 0 && waypointLocation.getLongitude() == 0) {
             bearingView.setText("");
             distanceView.setText("");
             return;
         }
 
-        float b = (location.bearingTo(waypointLocation) - location.getBearing() + 2 * 360) % 360;
-        bearingView.setText(String.format(getString(R.string.waypoint_angle), (int)b));
+        float b = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
+        bearingView.setText(String.format(getString(R.string.angle), (int)b));
         distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(location.distanceTo(waypointLocation))));
         bearingArrow.setAngleDegrees(b);
     }

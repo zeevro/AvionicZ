@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zeevro.avionicz">
 
-    <uses-feature android:name="android.hardware.sensor.barometer" />
-    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.sensor.barometer" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="true" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 

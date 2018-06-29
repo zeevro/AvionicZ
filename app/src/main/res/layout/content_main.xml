@@ -153,11 +153,11 @@
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
-        android:id="@+id/gpsStatus"
+        android:id="@+id/headingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:textSize="20sp"
+        android:textSize="40sp"
         android:layout_marginRight="5sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintRight_toRightOf="@id/bearingArrow" />
