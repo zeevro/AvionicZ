@@ -153,6 +153,16 @@
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
+        android:id="@+id/etaValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="40sp"
+        android:layout_marginLeft="5sp"
+        app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
         android:id="@+id/headingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

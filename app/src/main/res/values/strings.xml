@@ -18,6 +18,9 @@
 
     <string name="angle">%d°</string>
     <string name="waypoint_distance">%.3f</string>
+    <string name="eta_hours">%dh%dm%ds</string>
+    <string name="eta_minutes">%dm%ds</string>
+    <string name="eta_seconds">%ds</string>
 
     <string name="setting_altitude_low_pass_alpha_title">Altitude low-Pass filter ALPHA</string>
     <string name="setting_altitude_low_pass_alpha_summary">Higher filters less. Default is 0.25.</string>

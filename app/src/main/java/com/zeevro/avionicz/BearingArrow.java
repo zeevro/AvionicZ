@@ -82,7 +82,7 @@ class BearingArrow {
     }
 
     void setAngleDegrees(float deg) {
-        setAngle(deg / 360 * TAU);
+        setAngle((float)Math.toRadians(deg));
     }
 
     void startAnimation() {

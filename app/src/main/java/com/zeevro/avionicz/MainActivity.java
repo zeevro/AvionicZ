@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private SharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView, headingView;
+    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView;
     private Button pressureButton, waypointButton;
 
     private float lastAltitude, seaLevelPressureCalibration;
@@ -225,6 +225,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         altDecView.setText(getString(R.string.decimal_separator) + Math.abs((int)(altitude * 10 % 10)));
     }
 
+    protected int calcEta(float speed, float distance) {
+        if (speed == 0) return 0;
+        return (int)(distance / speed);
+    }
+
+    protected String getEtaString(int eta) {
+        if (eta >= 3600) return String.format(getString(R.string.eta_hours), eta / 3600, eta % 3600 / 60, eta % 3600 % 60);
+        if (eta >= 60) return String.format(getString(R.string.eta_minutes), eta / 60, eta % 60);
+        return String.format(getString(R.string.eta_seconds), eta);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         waypointButton = (Button) findViewById(R.id.waypointButton);
         bearingView = (TextView) findViewById(R.id.bearingValue);
         distanceView = (TextView) findViewById(R.id.distanceValue);
+        etaView = (TextView) findViewById(R.id.etaValue);
         headingView = (TextView) findViewById(R.id.headingValue);
 
         havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
@@ -511,10 +523,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             return;
         }
 
-        float b = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
-        bearingView.setText(String.format(getString(R.string.angle), (int)b));
-        distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(location.distanceTo(waypointLocation))));
-        bearingArrow.setAngleDegrees(b);
+        float bearingToWaypoint = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
+        float distanceToWaypoint = location.distanceTo(waypointLocation);
+
+        bearingView.setText(String.format(getString(R.string.angle), (int)bearingToWaypoint));
+        distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(distanceToWaypoint)));
+        etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
+        bearingArrow.setAngleDegrees(bearingToWaypoint);
     }
 
     @Override
