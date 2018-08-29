@@ -45,6 +45,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.FileNotFoundException;
@@ -100,11 +108,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView;
     private Button pressureButton, waypointButton;
 
-    private float lastAltitude, seaLevelPressureCalibration;
-    private long lastAltitudeTimestamp;
+    private float lastPressure, seaLevelPressureCalibration;
+    private long lastPressureTimestamp;
     private int seaLevelPressure, tempSeaLevelPressure, seaLevelPressureAdjustSensitivity, vsiColorMax;
 
-    private LowPassFilter altitudeFilter = new LowPassFilter();
+    private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
 
     private ArrayList<WayPoint> waypoints = new ArrayList<>();
@@ -118,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private Drawable arrowDrawable;
 
     private boolean havePressureSensor = false;
+
+    private RequestQueue requestQueue;
 
     protected String getStringPreference(String name, String default_value) {
         String value = prefs.getString(name, null);
@@ -241,25 +251,25 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        altView = (TextView) findViewById(R.id.altitudeValue);
-        altDecView = (TextView) findViewById(R.id.altitudeDecimalValue);
-        vsiView = (TextView) findViewById(R.id.verticalSpeedValue);
-        pressureButton = (Button) findViewById(R.id.pressureButton);
-        waypointButton = (Button) findViewById(R.id.waypointButton);
-        bearingView = (TextView) findViewById(R.id.bearingValue);
-        distanceView = (TextView) findViewById(R.id.distanceValue);
-        etaView = (TextView) findViewById(R.id.etaValue);
-        headingView = (TextView) findViewById(R.id.headingValue);
+        altView = findViewById(R.id.altitudeValue);
+        altDecView = findViewById(R.id.altitudeDecimalValue);
+        vsiView = findViewById(R.id.verticalSpeedValue);
+        pressureButton = findViewById(R.id.pressureButton);
+        waypointButton = findViewById(R.id.waypointButton);
+        bearingView = findViewById(R.id.bearingValue);
+        distanceView = findViewById(R.id.distanceValue);
+        etaView = findViewById(R.id.etaValue);
+        headingView = findViewById(R.id.headingValue);
 
         havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
 
         pressureButton.setOnTouchListener(this);
 
-        ImageView arrowView = (ImageView)findViewById(R.id.bearingArrow);
+        ImageView arrowView = findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
 
         arrowDrawable = getResources().getDrawable(R.drawable.arrow);
@@ -289,6 +299,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             findViewById(R.id.minusTenButton).setEnabled(false);
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
+
+        requestQueue = Volley.newRequestQueue(this);
     }
 
     @Override
@@ -358,13 +370,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void onSensorChanged(SensorEvent sensorEvent) {
         switch (sensorEvent.sensor.getType()) {
             case Sensor.TYPE_PRESSURE:
-                float pressureValue = sensorEvent.values[0];
+                float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
 
-                float altitude = altitudeFilter.getOutput(m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressureValue)));
+                float altitude = m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressure));
 
-                float vsi = vsiFilter.getOutput((altitude - lastAltitude) / (sensorEvent.timestamp - lastAltitudeTimestamp));
-                lastAltitude = altitude;
-                lastAltitudeTimestamp = sensorEvent.timestamp;
+                float vsi = vsiFilter.getOutput((altitude - m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, lastPressure))) / (sensorEvent.timestamp - lastPressureTimestamp));
+                lastPressure = pressure;
+                lastPressureTimestamp = sensorEvent.timestamp;
                 int verticalSpeed = (int)(vsi * 60000000000L);
 
                 setAltitudeIndicator(altitude);
@@ -482,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         Log.d(TAG, "onSharedPreferenceChanged: " + k + " = " + prefs.getAll().get(k));
         switch (k) {
             case "altitude_low_pass_alpha":
-                altitudeFilter.setAlpha(getFloatPreference("altitude_low_pass_alpha", 0.25f)); break;
+                pressureFilter.setAlpha(getFloatPreference("altitude_low_pass_alpha", 0.25f)); break;
             case "vertical_speed_low_pass_alpha":
                 vsiFilter.setAlpha(getFloatPreference("vertical_speed_low_pass_alpha", 0.05f)); break;
             case "sea_level_pressure_adjust_sensitivity":
@@ -520,16 +532,39 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (waypointLocation.getLatitude() == 0 && waypointLocation.getLongitude() == 0) {
             bearingView.setText("");
             distanceView.setText("");
-            return;
+        } else {
+            float bearingToWaypoint = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
+            float distanceToWaypoint = location.distanceTo(waypointLocation);
+
+            bearingView.setText(String.format(getString(R.string.angle), (int) bearingToWaypoint));
+            distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(distanceToWaypoint)));
+            etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
+            bearingArrow.setAngleDegrees(bearingToWaypoint);
         }
 
-        float bearingToWaypoint = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
-        float distanceToWaypoint = location.distanceTo(waypointLocation);
-
-        bearingView.setText(String.format(getString(R.string.angle), (int)bearingToWaypoint));
-        distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(distanceToWaypoint)));
-        etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
-        bearingArrow.setAngleDegrees(bearingToWaypoint);
+        JSONObject reqData = new JSONObject();
+        try {
+            reqData.put("lat", location.getLatitude());
+            reqData.put("lon", location.getLongitude());
+            reqData.put("speed", location.getSpeed());
+            reqData.put("hdg", location.getBearing());
+            reqData.put("pressure", lastPressure);
+            reqData.put("id", "testing");
+        } catch (JSONException ex) {
+            Log.d(TAG, "JSON Error!");
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://avionicz.zeevro.com:3459/report_location", reqData, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d(TAG, "HTTP Success!");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "HTTP Error! " + error.toString());
+            }
+        });
+        requestQueue.add(jsonObjectRequest);
     }
 
     @Override
