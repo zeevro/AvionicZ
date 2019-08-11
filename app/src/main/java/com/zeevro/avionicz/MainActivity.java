@@ -24,12 +24,14 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
@@ -251,9 +253,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
         altView = findViewById(R.id.altitudeValue);
         altDecView = findViewById(R.id.altitudeDecimalValue);
@@ -393,6 +394,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.menuButton:
+                PopupMenu popup = new PopupMenu(this, view);
+                MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.menu_main, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        return onOptionsItemSelected(menuItem);
+                    }
+                });
+                popup.show();
+                break;
+
             case R.id.minusOneButton:
                 setSeaLevelPressure(seaLevelPressure - 1); break;
             case R.id.minusTenButton:
