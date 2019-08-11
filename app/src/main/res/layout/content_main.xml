@@ -119,6 +119,18 @@
         android:text="@string/waypoint_button"
         android:textSize="30sp"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/targetButton"
+        app:layout_constraintTop_toBottomOf="@id/pressureButton" />
+
+    <Button
+        android:id="@+id/targetButton"
+        android:onClick="onClick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/target_button"
+        android:textSize="30sp"
+        android:visibility="gone"
+        app:layout_constraintLeft_toRightOf="@id/waypointButton"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pressureButton" />
 

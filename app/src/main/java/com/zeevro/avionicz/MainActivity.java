@@ -45,14 +45,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+//import com.android.volley.RequestQueue;
+//import com.android.volley.Response;
+//import com.android.volley.VolleyError;
+//import com.android.volley.toolbox.JsonObjectRequest;
+//import com.android.volley.toolbox.Volley;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONException;
+//import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.FileNotFoundException;
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private boolean havePressureSensor = false;
 
-    private RequestQueue requestQueue;
+//    private RequestQueue requestQueue;
 
     protected String getStringPreference(String name, String default_value) {
         String value = prefs.getString(name, null);
@@ -300,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
 
-        requestQueue = Volley.newRequestQueue(this);
+//        requestQueue = Volley.newRequestQueue(this);
     }
 
     @Override
@@ -542,29 +542,29 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             bearingArrow.setAngleDegrees(bearingToWaypoint);
         }
 
-        JSONObject reqData = new JSONObject();
-        try {
-            reqData.put("lat", location.getLatitude());
-            reqData.put("lon", location.getLongitude());
-            reqData.put("speed", location.getSpeed());
-            reqData.put("hdg", location.getBearing());
-            reqData.put("pressure", lastPressure);
-            reqData.put("id", "testing");
-        } catch (JSONException ex) {
-            Log.d(TAG, "JSON Error!");
-        }
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://avionicz.zeevro.com:3459/report_location", reqData, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, "HTTP Success!");
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "HTTP Error! " + error.toString());
-            }
-        });
-        requestQueue.add(jsonObjectRequest);
+//        JSONObject reqData = new JSONObject();
+//        try {
+//            reqData.put("lat", location.getLatitude());
+//            reqData.put("lon", location.getLongitude());
+//            reqData.put("speed", location.getSpeed());
+//            reqData.put("hdg", location.getBearing());
+//            reqData.put("pressure", lastPressure);
+//            reqData.put("id", "testing");
+//        } catch (JSONException ex) {
+//            Log.d(TAG, "JSON Error!");
+//        }
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://avionicz.zeevro.com:3459/report_location", reqData, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                Log.d(TAG, "HTTP Success!");
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.d(TAG, "HTTP Error! " + error.toString());
+//            }
+//        });
+//        requestQueue.add(jsonObjectRequest);
     }
 
     @Override

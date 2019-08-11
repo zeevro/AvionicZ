@@ -11,6 +11,8 @@
     <string name="loaded_waypoints">Loaded %d waypoints from GPX file.</string>
 
     <string name="waypoint_button">Waypoint</string>
+    <string name="target_button">Target</string>
+
     <string name="waypoint_picker_clear_button">Clear</string>
     <string name="waypoints_search_hint">Search</string>
 
