@@ -1,6 +1,6 @@
 package com.zeevro.avionicz;
 
-import android.util.Log;
+//import android.util.Log;
 
 class ColorGradient {
     private int negative;

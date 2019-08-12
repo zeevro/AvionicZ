@@ -4,12 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.zeevro.avionicz.MainActivity"
-    tools:showIn="@layout/activity_main">
+    tools:context="com.zeevro.avionicz.MainActivity">
 
     <Button
-        android:id="@+id/menuButton"
+        android:id="@+id/settingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0sp"
@@ -35,7 +33,8 @@
             android:textAlignment="center"
             android:textSize="100sp"
             android:includeFontPadding="false"
-            app:layout_constraintLeft_toLeftOf="parent" />
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/altitudeDecimalValue"
@@ -49,7 +48,8 @@
             app:layout_constraintLeft_toRightOf="@id/altitudeValue"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/altitudeValue"
-            app:layout_constraintVertical_bias="0.75" />
+            app:layout_constraintVertical_bias="0.75"
+            tools:ignore="HardcodedText" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -63,7 +63,8 @@
         android:includeFontPadding="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/altitudeLayout" />
+        app:layout_constraintTop_toBottomOf="@id/altitudeLayout"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/waypointButton"
@@ -87,7 +88,8 @@
         app:layout_constraintLeft_toRightOf="@id/waypointButton"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/waypointButton"
-        app:layout_constraintBottom_toBottomOf="@id/waypointButton"/>
+        app:layout_constraintBottom_toBottomOf="@id/waypointButton"
+        tools:ignore="HardcodedText" />
 
     <ImageView
         android:id="@+id/bearingArrow"
@@ -97,7 +99,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/waypointButton" />
+        app:layout_constraintTop_toBottomOf="@id/waypointButton"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/bearingValue"
@@ -107,7 +110,8 @@
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/bearingArrow" />
+        app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/distanceValue"
@@ -117,7 +121,8 @@
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@id/bearingArrow" />
+        app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/etaValue"
@@ -127,7 +132,8 @@
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/headingValue"
@@ -137,6 +143,7 @@
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
-        app:layout_constraintRight_toRightOf="@id/bearingArrow" />
+        app:layout_constraintRight_toRightOf="@id/bearingArrow"
+        tools:ignore="RtlHardcoded" />
 
 </android.support.constraint.ConstraintLayout>

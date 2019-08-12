@@ -48,4 +48,10 @@
         android:defaultValue="40"
         android:selectAllOnFocus="true" />
 
+    <Preference
+        android:key="gpx_file_uri"
+        android:title="@string/setting_waypoint_file_title"
+        android:summary="@string/setting_waypoint_file_summary"
+        android:defaultValue="" />
+
 </PreferenceScreen>

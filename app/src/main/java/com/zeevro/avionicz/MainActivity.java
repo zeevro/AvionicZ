@@ -2,11 +2,11 @@ package com.zeevro.avionicz;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -24,17 +24,13 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -45,14 +41,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import com.android.volley.RequestQueue;
-//import com.android.volley.Response;
-//import com.android.volley.VolleyError;
-//import com.android.volley.toolbox.JsonObjectRequest;
-//import com.android.volley.toolbox.Volley;
-
-//import org.json.JSONException;
-//import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.FileNotFoundException;
@@ -62,25 +50,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
-import static android.view.View.*;
+import static android.view.View.OnClickListener;
+import static android.view.View.OnTouchListener;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, OnClickListener, OnTouchListener, SensorEventListener, LocationListener {
+//import com.android.volley.RequestQueue;
+//import com.android.volley.Response;
+//import com.android.volley.VolleyError;
+//import com.android.volley.toolbox.JsonObjectRequest;
+//import com.android.volley.toolbox.Volley;
+//import org.json.JSONException;
+//import org.json.JSONObject;
 
-    private static final String TAG = "AvionicZ";
+public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnClickListener, OnTouchListener, SensorEventListener, LocationListener {
 
-    private static final int GPX_FILE_REQUEST_CODE = 12;
+    private static final String TAG = "AvionicZ/MainActivity";
 
     private class WaypointArrayAdapter extends ArrayAdapter<WayPoint> {
         WaypointArrayAdapter(Context context, int resource, List<WayPoint> objects) {
             super(context, resource, objects);
         }
 
+        @SuppressWarnings("ConstantConditions")
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -131,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
 //    private RequestQueue requestQueue;
 
+    @SuppressWarnings("SameParameterValue")
     protected String getStringPreference(String name, String default_value) {
         String value = prefs.getString(name, null);
         if ((value == null) || value.isEmpty()) {
@@ -156,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     protected void loadWayPoints(Uri uri) {
+        // TODO: Use GPXParser().parse(stream, new GpxFetchedAndParsed() { ... });
         InputStream stream;
         try {
             stream = getContentResolver().openInputStream(uri);
@@ -194,10 +193,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         waypointButton.setText(R.string.waypoint_button);
 
         Toast.makeText(this, String.format(getString(R.string.loaded_waypoints), tempWaypoints.size()), Toast.LENGTH_LONG).show();
-
-        SharedPreferences.Editor prefsEditor = prefs.edit();
-        prefsEditor.putString("gpx_file_uri", uri.toString());
-        prefsEditor.apply();
     }
 
     protected float m2ft(float x) {
@@ -252,9 +247,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        setContentView(R.layout.main_screen);
 
         altView = findViewById(R.id.altitudeValue);
         altDecView = findViewById(R.id.altitudeDecimalValue);
@@ -306,8 +299,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         if (havePressureSensor) {
             SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-            Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-            sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
+            if (sensorManager != null) {
+                Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+                sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -319,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         bearingArrow.startAnimation();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onStop() {
         super.onStop();
@@ -332,30 +328,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
 
         bearingArrow.stopAnimation();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-
-            case R.id.action_gpx_file:
-                startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                        .addCategory(Intent.CATEGORY_OPENABLE)
-                        .setType("*/*"), GPX_FILE_REQUEST_CODE);
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressLint("SetTextI18n")
@@ -383,21 +355,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.menuButton:
-                PopupMenu popup = new PopupMenu(this, view);
-                MenuInflater inflater = popup.getMenuInflater();
-                inflater.inflate(R.menu.menu_main, popup.getMenu());
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        return onOptionsItemSelected(menuItem);
-                    }
-                });
-                popup.show();
-                break;
+            case R.id.settingsButton:
+                startActivity(new Intent(this, SettingsActivity.class)); break;
 
             case R.id.pressureButton:
                 final Dialog pressureWindow = new Dialog(this);
@@ -407,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 final AtomicBoolean isEditing = new AtomicBoolean(false);
                 final EditText pressureWindowText = pressureWindow.findViewById(R.id.pressureEdit);
 
-                pressureWindowText.setText(String.format("%d", seaLevelPressure));
+                pressureWindowText.setText(String.format(Locale.getDefault(), "%d", seaLevelPressure));
 
                 pressureWindow.findViewById(R.id.buttonCancel).setOnClickListener(new OnClickListener() {
                     @Override
@@ -456,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 pressureWindow.findViewById(R.id.buttonMinus).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        pressureWindowText.setText(String.format("%d", Integer.valueOf(pressureWindowText.getText().toString()) - 1));
+                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.valueOf(pressureWindowText.getText().toString()) - 1));
                         isEditing.set(false);
                     }
                 });
@@ -464,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 pressureWindow.findViewById(R.id.buttonPlus).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        pressureWindowText.setText(String.format("%d", Integer.valueOf(pressureWindowText.getText().toString()) + 1));
+                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.valueOf(pressureWindowText.getText().toString()) + 1));
                         isEditing.set(false);
                     }
                 });
@@ -578,9 +541,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 seaLevelPressureCalibration = getFloatPreference("sea_level_pressure_calibration", 0);
             case "vertical_speed_color_max":
                 vsiColorMax = getIntPreference("vertical_speed_color_max", 100); break;
+            case "gpx_file_uri":
+                String gpxFileUri = getStringPreference("gpx_file_uri", null);
+                if (gpxFileUri != null) {
+                    loadWayPoints(Uri.parse(gpxFileUri));
+                }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         int result = grantResults[0];
@@ -657,18 +626,4 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void onProviderDisabled(String s) {
         Log.d(TAG, "Provider Disabled: " + s);
     }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        switch (requestCode) {
-            case GPX_FILE_REQUEST_CODE:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    Uri uri = resultData.getData();
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    loadWayPoints(uri);
-                }
-                break;
-        }
-    }
-
 }

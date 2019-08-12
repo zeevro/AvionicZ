@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textNoSuggestions"
+        android:textSize="24sp"
         android:hint="@string/waypoints_search_hint" />
 
     <ListView

@@ -15,7 +15,7 @@
         android:textIsSelectable="false"
         android:focusable="false"
         android:longClickable="false"
-        android:hint="Pressure"/>
+        android:hint="@string/pressure"/>
 
     <TableLayout
         android:layout_width="match_parent"
@@ -27,68 +27,68 @@
             <Button
                 android:id="@+id/button1"
                 style="@style/keyboard_number_button"
-                android:text="1" />
+                android:text="@string/_1" />
 
             <Button
                 android:id="@+id/button2"
                 style="@style/keyboard_number_button"
-                android:text="2" />
+                android:text="@string/_2" />
 
             <Button
                 android:id="@+id/button3"
                 style="@style/keyboard_number_button"
-                android:text="3" />
+                android:text="@string/_3" />
         </TableRow>
 
         <TableRow style="@style/keyboard_row">
             <Button
                 android:id="@+id/button4"
                 style="@style/keyboard_number_button"
-                android:text="4" />
+                android:text="@string/_4" />
 
             <Button
                 android:id="@+id/button5"
                 style="@style/keyboard_number_button"
-                android:text="5" />
+                android:text="@string/_5" />
 
             <Button
                 android:id="@+id/button6"
                 style="@style/keyboard_number_button"
-                android:text="6" />
+                android:text="@string/_6" />
         </TableRow>
 
         <TableRow style="@style/keyboard_row">
             <Button
                 android:id="@+id/button7"
                 style="@style/keyboard_number_button"
-                android:text="7" />
+                android:text="@string/_7" />
 
             <Button
                 android:id="@+id/button8"
                 style="@style/keyboard_number_button"
-                android:text="8" />
+                android:text="@string/_8" />
 
             <Button
                 android:id="@+id/button9"
                 style="@style/keyboard_number_button"
-                android:text="9" />
+                android:text="@string/_9" />
         </TableRow>
 
         <TableRow style="@style/keyboard_row">
             <Button
                 android:id="@+id/buttonMinus"
                 style="@style/keyboard_number_button"
-                android:text="-" />
+                android:text="@string/minus" />
 
             <Button
                 android:id="@+id/button0"
                 style="@style/keyboard_number_button"
-                android:text="0" />
+                android:text="@string/_0" />
 
             <Button
                 android:id="@+id/buttonPlus"
                 style="@style/keyboard_number_button"
-                android:text="+" />
+                android:text="@string/plus" />
         </TableRow>
 
     </TableLayout>
@@ -106,7 +106,7 @@
             android:layout_height="wrap_content"
             style="?android:attr/buttonBarButtonStyle"
             android:textSize="24sp"
-            android:text="Cancel"/>
+            android:text="@android:string/cancel"/>
 
         <Button
             android:id="@+id/buttonStandard"
@@ -114,7 +114,7 @@
             android:layout_height="wrap_content"
             style="?android:attr/buttonBarButtonStyle"
             android:textSize="24sp"
-            android:text="Standard"/>
+            android:text="@string/standard"/>
 
         <Button
             android:id="@+id/buttonOk"
@@ -122,7 +122,7 @@
             android:layout_height="wrap_content"
             style="?android:attr/buttonBarButtonStyle"
             android:textSize="24sp"
-            android:text="OK"/>
+            android:text="@android:string/ok"/>
 
     </LinearLayout>
 
