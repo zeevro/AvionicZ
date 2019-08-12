@@ -23,6 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center_vertical"
+        style="?android:attr/buttonBarButtonStyle"
+        android:textSize="24sp"
         android:text="@string/waypoint_picker_clear_button" />
 
 </LinearLayout>

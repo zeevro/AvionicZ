@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/pressureEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="72sp"
+        android:textAlignment="center"
+        android:includeFontPadding="false"
+        android:inputType="none"
+        android:textIsSelectable="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:hint="Pressure"/>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <TableRow style="@style/keyboard_row">
+            <Button
+                android:id="@+id/button1"
+                style="@style/keyboard_number_button"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/button2"
+                style="@style/keyboard_number_button"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/button3"
+                style="@style/keyboard_number_button"
+                android:text="3" />
+        </TableRow>
+
+        <TableRow style="@style/keyboard_row">
+            <Button
+                android:id="@+id/button4"
+                style="@style/keyboard_number_button"
+                android:text="4" />
+
+            <Button
+                android:id="@+id/button5"
+                style="@style/keyboard_number_button"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/button6"
+                style="@style/keyboard_number_button"
+                android:text="6" />
+        </TableRow>
+
+        <TableRow style="@style/keyboard_row">
+            <Button
+                android:id="@+id/button7"
+                style="@style/keyboard_number_button"
+                android:text="7" />
+
+            <Button
+                android:id="@+id/button8"
+                style="@style/keyboard_number_button"
+                android:text="8" />
+
+            <Button
+                android:id="@+id/button9"
+                style="@style/keyboard_number_button"
+                android:text="9" />
+        </TableRow>
+
+        <TableRow style="@style/keyboard_row">
+            <Button
+                android:id="@+id/buttonMinus"
+                style="@style/keyboard_number_button"
+                android:text="-" />
+
+            <Button
+                android:id="@+id/button0"
+                style="@style/keyboard_number_button"
+                android:text="0" />
+
+            <Button
+                android:id="@+id/buttonPlus"
+                style="@style/keyboard_number_button"
+                android:text="+" />
+        </TableRow>
+
+    </TableLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        style="?android:attr/buttonBarStyle">
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:textSize="24sp"
+            android:text="Cancel"/>
+
+        <Button
+            android:id="@+id/buttonStandard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:textSize="24sp"
+            android:text="Standard"/>
+
+        <Button
+            android:id="@+id/buttonOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:textSize="24sp"
+            android:text="OK"/>
+
+    </LinearLayout>
+
+</LinearLayout>

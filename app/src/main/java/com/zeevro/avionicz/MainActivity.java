@@ -25,7 +25,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -37,7 +36,6 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -64,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -113,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private float lastPressure, seaLevelPressureCalibration;
     private long lastPressureTimestamp;
     private int seaLevelPressure, tempSeaLevelPressure, seaLevelPressureAdjustSensitivity, vsiColorMax;
+    private boolean seaLevelPressureSliderChanged;
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
@@ -294,10 +294,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (!havePressureSensor) {
             vsiView.setText("---");
             pressureButton.setEnabled(false);
-            findViewById(R.id.plusOneButton).setEnabled(false);
-            findViewById(R.id.plusTenButton).setEnabled(false);
-            findViewById(R.id.minusOneButton).setEnabled(false);
-            findViewById(R.id.minusTenButton).setEnabled(false);
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
 
@@ -357,10 +353,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         .addCategory(Intent.CATEGORY_OPENABLE)
                         .setType("*/*"), GPX_FILE_REQUEST_CODE);
                 return true;
-
-            case R.id.action_reset_sea_level_pressure:
-                setSeaLevelPressure((int)SensorManager.PRESSURE_STANDARD_ATMOSPHERE);
-                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -407,14 +399,78 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 popup.show();
                 break;
 
-            case R.id.minusOneButton:
-                setSeaLevelPressure(seaLevelPressure - 1); break;
-            case R.id.minusTenButton:
-                setSeaLevelPressure(seaLevelPressure - 10); break;
-            case R.id.plusOneButton:
-                setSeaLevelPressure(seaLevelPressure + 1); break;
-            case R.id.plusTenButton:
-                setSeaLevelPressure(seaLevelPressure + 10); break;
+            case R.id.pressureButton:
+                final Dialog pressureWindow = new Dialog(this);
+                pressureWindow.setContentView(R.layout.pressure_window);
+                pressureWindow.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+                final AtomicBoolean isEditing = new AtomicBoolean(false);
+                final EditText pressureWindowText = pressureWindow.findViewById(R.id.pressureEdit);
+
+                pressureWindowText.setText(String.format("%d", seaLevelPressure));
+
+                pressureWindow.findViewById(R.id.buttonCancel).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pressureWindow.dismiss();
+                    }
+                });
+
+                pressureWindow.findViewById(R.id.buttonStandard).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        setSeaLevelPressure((int)SensorManager.PRESSURE_STANDARD_ATMOSPHERE);
+                        pressureWindow.dismiss();
+                    }
+                });
+
+                pressureWindow.findViewById(R.id.buttonOk).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        setSeaLevelPressure(Integer.valueOf(pressureWindowText.getText().toString()));
+                        pressureWindow.dismiss();
+                    }
+                });
+
+                OnClickListener keypadOnClick = new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!isEditing.getAndSet(true)) {
+                            pressureWindowText.setText("");
+                        }
+                        pressureWindowText.append(((Button)view).getText());
+                    }
+                };
+
+                pressureWindow.findViewById(R.id.button0).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button1).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button2).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button3).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button4).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button5).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button6).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button7).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button8).setOnClickListener(keypadOnClick);
+                pressureWindow.findViewById(R.id.button9).setOnClickListener(keypadOnClick);
+
+                pressureWindow.findViewById(R.id.buttonMinus).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pressureWindowText.setText(String.format("%d", Integer.valueOf(pressureWindowText.getText().toString()) - 1));
+                        isEditing.set(false);
+                    }
+                });
+
+                pressureWindow.findViewById(R.id.buttonPlus).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pressureWindowText.setText(String.format("%d", Integer.valueOf(pressureWindowText.getText().toString()) + 1));
+                        isEditing.set(false);
+                    }
+                });
+
+                pressureWindow.show();
+                break;
 
             case R.id.waypointButton:
                 final Dialog waypointPicker = new Dialog(this);
@@ -485,18 +541,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public boolean onTouch(View view, MotionEvent evt) {
         switch (view.getId()) {
             case R.id.pressureButton:
-                if (evt.getAction() == MotionEvent.ACTION_MOVE) {
-                    tempSeaLevelPressure = (int)(seaLevelPressure - evt.getY() / seaLevelPressureAdjustSensitivity) + 1;
-                    pressureButton.setText(String.valueOf(tempSeaLevelPressure));
-                    return true;
-                }
-                if (evt.getAction() == MotionEvent.ACTION_UP) {
-                    Rect rect = new Rect();
-                    view.getHitRect(rect);
-                    if (!rect.contains(view.getLeft() + (int)evt.getX(), view.getTop() + (int)evt.getY())) {
-                        setSeaLevelPressure(tempSeaLevelPressure);
+                switch (evt.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        tempSeaLevelPressure = seaLevelPressure;
+                        seaLevelPressureSliderChanged = false;
+                        return false;
+
+                    case MotionEvent.ACTION_MOVE:
+                        setSeaLevelPressure((int)(tempSeaLevelPressure - evt.getY() / seaLevelPressureAdjustSensitivity) + 1);
+                        if (!seaLevelPressureSliderChanged) {
+                            Rect rect = new Rect();
+                            view.getHitRect(rect);
+                            seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int) evt.getX(), view.getTop() + (int) evt.getY());
+                        }
                         return true;
-                    }
+
+                    case MotionEvent.ACTION_UP:
+                        return seaLevelPressureSliderChanged;
                 }
                 break;
         }

@@ -14,10 +14,4 @@
         android:orderInCategory="100"
         android:title="@string/action_gpx_file"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_reset_sea_level_pressure"
-        android:orderInCategory="100"
-        android:title="@string/action_reset_sea_level_pressure"
-        app:showAsAction="never" />
 </menu>
