@@ -21,6 +21,7 @@ class BearingArrow {
 
     private float arrowTargetAngle = 0;
     private float arrowCurrentAngle = 0;
+    @SuppressWarnings("FieldCanBeLocal")
     private final float arrowSpeed = 0.25f;
 
     private void drawFrame() {

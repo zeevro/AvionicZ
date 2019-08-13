@@ -26,7 +26,7 @@ class ColorGradient {
         return ret;
     }
 
-    int calculateComponent(int source, float intensity) {
+    private int calculateComponent(int source, float intensity) {
         return (int)((float)source * intensity);
     }
 

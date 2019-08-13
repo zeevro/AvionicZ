@@ -12,7 +12,7 @@ import android.util.Log;
 
 public class SettingsActivity extends AppCompatPreferenceActivity implements Preference.OnPreferenceClickListener {
 
-    private static final String TAG = "AvionicZ/SettingsActivity";
+    private static final String TAG = "AvionicZ/Settings";
 
     private static final int GPX_FILE_REQUEST_CODE = 12;
 
@@ -48,10 +48,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Pre
                 if (resultCode == Activity.RESULT_OK && resultData != null) {
                     Uri uri = resultData.getData();
                     Log.d(TAG, "Got GPX file URI: " + uri);
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-                    prefsEditor.putString("gpx_file_uri", uri.toString());
-                    prefsEditor.apply();
+                    if (uri != null) {
+                        getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+                        prefsEditor.putString("gpx_file_uri", uri.toString());
+                        prefsEditor.apply();
+                    }
                 }
                 break;
         }

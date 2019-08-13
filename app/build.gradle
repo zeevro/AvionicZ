@@ -19,9 +19,13 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleDynamicVersion
     implementation 'com.android.support:appcompat-v7:28.+'
+    //noinspection GradleDynamicVersion
     implementation 'com.android.support.constraint:constraint-layout:1.+'
+    //noinspection GradleDynamicVersion
     implementation 'com.android.support:design:28.+'
+    //noinspection GradleDynamicVersion
     implementation 'com.android.support:support-v4:28.+'
     implementation 'io.ticofab.androidgpxparser:parser:1.5.0'
     implementation 'net.danlew:android.joda:2.10.2'

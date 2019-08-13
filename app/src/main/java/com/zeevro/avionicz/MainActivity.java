@@ -70,7 +70,7 @@ import static android.view.View.OnTouchListener;
 
 public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnClickListener, OnTouchListener, SensorEventListener, LocationListener {
 
-    private static final String TAG = "AvionicZ/MainActivity";
+    private static final String TAG = "AvionicZ/Main";
 
     private class WaypointArrayAdapter extends ArrayAdapter<WayPoint> {
         WaypointArrayAdapter(Context context, int resource, List<WayPoint> objects) {
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            final LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            final LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View myView = inflater.inflate(R.layout.waypoint_entry, parent, false);
             WayPoint wpt = getItem(position);
 
@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         super.onStart();
 
         if (havePressureSensor) {
-            SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
             if (sensorManager != null) {
                 Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
                 sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         locationManager.removeUpdates(this);
 
         if (havePressureSensor) {
-            SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
             sensorManager.unregisterListener(this);
         }
 
@@ -355,7 +355,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -365,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             case R.id.pressureButton:
                 final Dialog pressureWindow = new Dialog(this);
                 pressureWindow.setContentView(R.layout.pressure_window);
+                //noinspection ConstantConditions
                 pressureWindow.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
                 final AtomicBoolean isEditing = new AtomicBoolean(false);
@@ -515,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                         if (!seaLevelPressureSliderChanged) {
                             Rect rect = new Rect();
                             view.getHitRect(rect);
-                            seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int) evt.getX(), view.getTop() + (int) evt.getY());
+                            seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int)evt.getX(), view.getTop() + (int)evt.getY());
                         }
                         return true;
 
@@ -549,13 +549,13 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         int result = grantResults[0];
         if (result == PackageManager.PERMISSION_GRANTED) {
             LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
             try {
+                //noinspection ConstantConditions
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             } catch (SecurityException ex) {
                 Toast.makeText(this, "GPS permission denied!", Toast.LENGTH_LONG).show();
@@ -580,7 +580,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             float bearingToWaypoint = (location.bearingTo(waypointLocation) - location.getBearing() + 4 * 360) % 360;
             float distanceToWaypoint = location.distanceTo(waypointLocation);
 
-            bearingView.setText(String.format(getString(R.string.angle), (int) bearingToWaypoint));
+            bearingView.setText(String.format(getString(R.string.angle), (int)bearingToWaypoint));
             distanceView.setText(String.format(getString(R.string.waypoint_distance), m2mile(distanceToWaypoint)));
             etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
             bearingArrow.setAngleDegrees(bearingToWaypoint);

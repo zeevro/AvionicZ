@@ -1,5 +1,6 @@
 package com.zeevro.avionicz;
 
+@SuppressWarnings("unused")
 class LowPassFilter {
     private float alpha = 0.25f;
     private float output = 0;
