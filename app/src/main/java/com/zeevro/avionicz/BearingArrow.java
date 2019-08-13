@@ -25,8 +25,8 @@ class BearingArrow {
     private final float arrowSpeed = 0.25f;
 
     private void drawFrame() {
-        float θ = arrowCurrentAngle - TAU / 4;
-        final float cX = mCanvas.getWidth() / 2, cY = mCanvas.getHeight() / 2;
+        float θ = arrowCurrentAngle - TAU / 4f;
+        final float cX = mCanvas.getWidth() / 2f, cY = mCanvas.getHeight() / 2f;
         final float R = Math.min(cX, cY);
         final float r = R * 0.6f;
         final float r2 = r / 2;
