@@ -48,6 +48,7 @@
         android:defaultValue="40"
         android:selectAllOnFocus="true" />
 
+    <!--suppress AndroidDomInspection -->
     <Preference
         android:key="gpx_file_uri"
         android:title="@string/setting_waypoint_file_title"

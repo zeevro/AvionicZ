@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -34,7 +34,7 @@
         <item name="android:gravity">center</item>
         <item name="android:scaleType">centerInside</item>
         <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
-        <item name="android:textSize">36dp</item>
+        <item name="android:textSize">36sp</item>
     </style>
 
     <style name="keyboard_number_button" parent="keyboard_button">

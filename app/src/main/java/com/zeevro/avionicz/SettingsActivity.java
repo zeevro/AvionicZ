@@ -43,19 +43,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Pre
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        switch (requestCode) {
-            case GPX_FILE_REQUEST_CODE:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    Uri uri = resultData.getData();
-                    Log.d(TAG, "Got GPX file URI: " + uri);
-                    if (uri != null) {
-                        getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-                        prefsEditor.putString("gpx_file_uri", uri.toString());
-                        prefsEditor.apply();
-                    }
-                }
-                break;
+        if (requestCode != GPX_FILE_REQUEST_CODE) return;
+
+        if (resultCode == Activity.RESULT_OK && resultData != null) {
+            Uri uri = resultData.getData();
+            Log.d(TAG, "Got GPX file URI: " + uri);
+            if (uri != null) {
+                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+                prefsEditor.putString("gpx_file_uri", uri.toString());
+                prefsEditor.apply();
+            }
         }
     }
 }

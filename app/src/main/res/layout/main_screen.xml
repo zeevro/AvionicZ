@@ -10,61 +10,51 @@
         android:id="@+id/settingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="0sp"
-        android:minHeight="0sp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
         android:onClick="onClick"
         android:drawableStart="@android:drawable/ic_menu_preferences"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/altitudeLayout"
+    <TextView
+        android:id="@+id/altitudeValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:textAlignment="center"
+        android:textSize="100sp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/altitudeDecimalValue"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        tools:text="123" />
+
+    <TextView
+        android:id="@+id/altitudeDecimalValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:textAlignment="center"
+        android:textSize="50sp"
+        app:layout_constraintTop_toTopOf="@id/altitudeValue"
+        app:layout_constraintBottom_toBottomOf="@id/altitudeValue"
+        app:layout_constraintVertical_bias="0.75"
+        app:layout_constraintLeft_toRightOf="@id/altitudeValue"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/altitudeValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="123"
-            android:textAlignment="center"
-            android:textSize="100sp"
-            android:includeFontPadding="false"
-            app:layout_constraintLeft_toLeftOf="parent"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/altitudeDecimalValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=".4"
-            android:textAlignment="center"
-            android:textSize="50sp"
-            android:includeFontPadding="false"
-            app:layout_constraintBottom_toBottomOf="@id/altitudeValue"
-            app:layout_constraintLeft_toRightOf="@id/altitudeValue"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/altitudeValue"
-            app:layout_constraintVertical_bias="0.75"
-            tools:ignore="HardcodedText" />
-
-    </android.support.constraint.ConstraintLayout>
+        tools:text=".4" />
 
     <TextView
         android:id="@+id/verticalSpeedValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="VS"
+        android:includeFontPadding="false"
         android:textAlignment="center"
         android:textSize="60sp"
-        android:includeFontPadding="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/altitudeLayout"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/altitudeValue"
+        tools:text="VS" />
 
     <Button
         android:id="@+id/waypointButton"
@@ -81,69 +71,71 @@
         android:id="@+id/pressureButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:includeFontPadding="false"
         android:onClick="onClick"
-        android:text="Prsr"
         android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="@id/waypointButton"
         app:layout_constraintLeft_toRightOf="@id/waypointButton"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/waypointButton"
-        app:layout_constraintBottom_toBottomOf="@id/waypointButton"
-        tools:ignore="HardcodedText" />
+        tools:text="1013" />
 
     <ImageView
         android:id="@+id/bearingArrow"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitCenter"
+        app:layout_constraintTop_toBottomOf="@id/waypointButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/waypointButton"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/bearingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5sp"
+        android:layout_marginRight="5dp"
         android:textAlignment="center"
         android:textSize="40sp"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:text="bearing"
         tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/distanceValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5sp"
+        android:layout_marginLeft="5dp"
         android:textAlignment="center"
         android:textSize="40sp"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:text="distance"
         tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/etaValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5sp"
+        android:layout_marginLeft="5dp"
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="parent"
+        tools:text="eta"
         tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/headingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5sp"
+        android:layout_marginRight="5dp"
         android:textAlignment="center"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
-        app:layout_constraintRight_toRightOf="@id/bearingArrow"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:text="heading"
         tools:ignore="RtlHardcoded" />
 
 </android.support.constraint.ConstraintLayout>

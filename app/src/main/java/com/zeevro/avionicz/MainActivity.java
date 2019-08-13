@@ -333,23 +333,21 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        switch (sensorEvent.sensor.getType()) {
-            case Sensor.TYPE_PRESSURE:
-                float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
+        // Only pressure sensor updates were requested
 
-                float altitude = m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressure));
+        float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
 
-                float vsi = vsiFilter.getOutput((altitude - m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, lastPressure))) / (sensorEvent.timestamp - lastPressureTimestamp));
-                lastPressure = pressure;
-                lastPressureTimestamp = sensorEvent.timestamp;
-                int verticalSpeed = (int)(vsi * 60000000000L);
+        float altitude = m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressure));
 
-                setAltitudeIndicator(altitude);
+        float vsi = vsiFilter.getOutput((altitude - m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, lastPressure))) / (sensorEvent.timestamp - lastPressureTimestamp));
+        lastPressure = pressure;
+        lastPressureTimestamp = sensorEvent.timestamp;
+        int verticalSpeed = (int)(vsi * 60000000000L);
 
-                vsiView.setText(String.valueOf(verticalSpeed));
-                vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float)vsiColorMax));
-                break;
-        }
+        setAltitudeIndicator(altitude);
+
+        vsiView.setText(String.valueOf(verticalSpeed));
+        vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float)vsiColorMax));
     }
 
     @Override
@@ -502,27 +500,25 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent evt) {
-        switch (view.getId()) {
-            case R.id.pressureButton:
-                switch (evt.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        tempSeaLevelPressure = seaLevelPressure;
-                        seaLevelPressureSliderChanged = false;
-                        return false;
+        // Only pressureButton has an onTouch listener
 
-                    case MotionEvent.ACTION_MOVE:
-                        setSeaLevelPressure((int)(tempSeaLevelPressure - evt.getY() / seaLevelPressureAdjustSensitivity) + 1);
-                        if (!seaLevelPressureSliderChanged) {
-                            Rect rect = new Rect();
-                            view.getHitRect(rect);
-                            seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int)evt.getX(), view.getTop() + (int)evt.getY());
-                        }
-                        return true;
+        switch (evt.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                tempSeaLevelPressure = seaLevelPressure;
+                seaLevelPressureSliderChanged = false;
+                return false;
 
-                    case MotionEvent.ACTION_UP:
-                        return seaLevelPressureSliderChanged;
+            case MotionEvent.ACTION_MOVE:
+                setSeaLevelPressure((int)(tempSeaLevelPressure - evt.getY() / seaLevelPressureAdjustSensitivity) + 1);
+                if (!seaLevelPressureSliderChanged) {
+                    Rect rect = new Rect();
+                    view.getHitRect(rect);
+                    seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int)evt.getX(), view.getTop() + (int)evt.getY());
                 }
-                break;
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                return seaLevelPressureSliderChanged;
         }
         return false;
     }
