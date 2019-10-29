@@ -57,14 +57,6 @@ import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 import static android.view.View.OnClickListener;
 
-//import com.android.volley.RequestQueue;
-//import com.android.volley.Response;
-//import com.android.volley.VolleyError;
-//import com.android.volley.toolbox.JsonObjectRequest;
-//import com.android.volley.toolbox.Volley;
-//import org.json.JSONException;
-//import org.json.JSONObject;
-
 public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnClickListener, SensorEventListener, LocationListener {
 
     private static final String TAG = "AvionicZ/Main";
@@ -123,8 +115,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     private Drawable arrowDrawable;
 
     private boolean havePressureSensor = false;
-
-//    private RequestQueue requestQueue;
 
     @SuppressWarnings("SameParameterValue")
     protected String getStringPreference(String name, String default_value) {
@@ -287,8 +277,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             vsiView.setText("---");
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
-
-//        requestQueue = Volley.newRequestQueue(this);
     }
 
     @Override
@@ -622,30 +610,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
             bearingArrow.setAngleDegrees(bearingToWaypoint);
         }
-
-//        JSONObject reqData = new JSONObject();
-//        try {
-//            reqData.put("lat", location.getLatitude());
-//            reqData.put("lon", location.getLongitude());
-//            reqData.put("speed", location.getSpeed());
-//            reqData.put("hdg", location.getBearing());
-//            reqData.put("pressure", lastPressure);
-//            reqData.put("id", "testing");
-//        } catch (JSONException ex) {
-//            Log.d(TAG, "JSON Error!");
-//        }
-//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://avionicz.zeevro.com:3459/report_location", reqData, new Response.Listener<JSONObject>() {
-//            @Override
-//            public void onResponse(JSONObject response) {
-//                Log.d(TAG, "HTTP Success!");
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Log.d(TAG, "HTTP Error! " + error.toString());
-//            }
-//        });
-//        requestQueue.add(jsonObjectRequest);
     }
 
     @Override
