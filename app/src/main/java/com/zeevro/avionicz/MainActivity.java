@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -29,7 +28,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -51,7 +49,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
@@ -59,7 +56,6 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 import static android.view.View.OnClickListener;
-import static android.view.View.OnTouchListener;
 
 //import com.android.volley.RequestQueue;
 //import com.android.volley.Response;
