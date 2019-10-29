@@ -4,14 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.RectF;
 import android.widget.ImageView;
 
 public class ArtificialHorizon {
-    private static final float PI = (float)Math.PI;
-    private static final float TAU = 2 * PI;
-
     private ImageView imageView;
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -38,7 +33,7 @@ public class ArtificialHorizon {
         mCanvas.drawLine(cX, cY, cX - w * 0.07f, cY + h * 0.02f, mLinePaint);
         mCanvas.drawLine(cX, cY, cX + w * 0.07f, cY + h * 0.02f, mLinePaint);
 
-        mCanvas.drawText(String.format("pitch: %f, roll: %f", pitch, roll), 0, mCanvas.getHeight() * 0.8f, mLinePaint);
+        //mCanvas.drawText(String.format("pitch: %f, roll: %f", pitch, roll), 0, mCanvas.getHeight() * 0.8f, mLinePaint);
 
         imageView.setImageBitmap(mBitmap);
     }
@@ -48,14 +43,14 @@ public class ArtificialHorizon {
         mBitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
 
-        mSkyColor = Color.parseColor("#36B4DD");
+        mSkyColor = imageView.getResources().getColor(R.color.artificialHorizonSky);
 
         mLinePaint.setColor(Color.BLACK);
         mLinePaint.setStrokeWidth(5);
         mLinePaint.setTextSize(30);
 
         mGroundPaint.setStyle(Paint.Style.FILL);
-        mGroundPaint.setColor(Color.parseColor("#865B4B"));
+        mGroundPaint.setColor(imageView.getResources().getColor(R.color.artificialHorizonGround));
     }
 
     void setAttitude(float pitch, float roll) {
