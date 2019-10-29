@@ -106,9 +106,11 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView;
 
-    private float lastPressure, seaLevelPressureCalibration, pitchOffset, rollOffset, lastPitch, lastRoll;
+    private float lastPressure, seaLevelPressureCalibration;
     private long lastPressureTimestamp;
     private int seaLevelPressure, vsiColorMax;
+    private boolean resetHorizon = false;
+    private float[] horizonZero = new float[3];
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
@@ -297,6 +299,8 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     protected void onStart() {
         super.onStart();
 
+        artificialHorizon.setAttitude(0, 0);
+
         SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         if (sensorManager != null) {
             if (havePressureSensor) {
@@ -314,9 +318,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             onRequestPermissionsResult(0, new String[]{}, new int[]{PackageManager.PERMISSION_GRANTED});
         }
 
-        pitchOffset = rollOffset = lastPitch = lastRoll = 0;
-
-        artificialHorizon.setAttitude(0, 0);
         bearingArrow.startAnimation();
     }
 
@@ -333,6 +334,15 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         bearingArrow.stopAnimation();
     }
+
+    /*private String angleVectStr(float[] vect) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            stringBuilder.append(' ');
+            stringBuilder.append((int)Math.toDegrees(vect[i]));
+        }
+        return stringBuilder.substring(1);
+    }*/
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -357,26 +367,47 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
 
             case Sensor.TYPE_GAME_ROTATION_VECTOR:
-                float[] rotationMatrix = new float[9];
+                //StringBuilder debugStr = new StringBuilder();
+
+                //debugStr.append("raw: ");
+                //debugStr.append(angleVectStr(sensorEvent.values));
+
+                float[] rotationMatrix = new float[16];
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, sensorEvent.values);
 
                 final int worldAxisForDeviceAxisX = SensorManager.AXIS_X;
                 final int worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
 
-                float[] adjustedRotationMatrix = new float[9];
+                float[] adjustedRotationMatrix = new float[16];
                 SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX, worldAxisForDeviceAxisY, adjustedRotationMatrix);
 
                 float[] orientation = new float[3];
                 SensorManager.getOrientation(adjustedRotationMatrix, orientation);
 
-                // TODO: Find a way to rotate the rotation matrix by saving an origin matrix. This offset business doesn't work.
-                lastPitch = (float)Math.toDegrees(orientation[1]);
-                lastRoll = (float)Math.toDegrees(orientation[2]);
+                //debugStr.append("\nremapped: ");
+                //debugStr.append(angleVectStr(orientation));
 
-                float pitch = pitchOffset - lastPitch;
-                float roll = rollOffset - lastRoll;
+                if (resetHorizon) {
+                    horizonZero = new float[3];
+                    for (int i = 0; i < 3; i++) {
+                        horizonZero[i] = -orientation[i];
+                    }
+                    resetHorizon = false;
+                }
+
+                for (int i = 0; i < 3; i++) {
+                    orientation[i] += horizonZero[i];
+                }
+
+                //debugStr.append("\ncallibrated: ");
+                //debugStr.append(angleVectStr(orientation));
+
+                float pitch = -(float)Math.toDegrees(orientation[1]);
+                float roll = -(float)Math.toDegrees(orientation[2]);
 
                 artificialHorizon.setAttitude(pitch, roll);
+
+                //debugView.setText(debugStr.toString());
 
                 break;
         }
@@ -392,11 +423,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 startActivity(new Intent(this, SettingsActivity.class)); break;
 
             case R.id.artificialHorizon:
-//                Random rand = new Random();
-//                artificialHorizon.setAttitude(rand.nextFloat() * 100 - 50, rand.nextFloat() * 100 - 50); break;
-                pitchOffset = lastPitch;
-                rollOffset = lastRoll;
-                break;
+                resetHorizon = true; break;
 
             case R.id.altitudeValue:
             case R.id.altitudeDecimalValue:
