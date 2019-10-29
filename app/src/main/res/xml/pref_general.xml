@@ -17,14 +17,6 @@
         android:selectAllOnFocus="true" />
 
     <EditTextPreference
-        android:key="sea_level_pressure_adjust_sensitivity"
-        android:title="@string/setting_sea_level_pressure_adjust_sensitivity_title"
-        android:summary="@string/setting_sea_level_pressure_adjust_sensitivity_summary"
-        android:inputType="number"
-        android:defaultValue="130"
-        android:selectAllOnFocus="true" />
-
-    <EditTextPreference
         android:key="sea_level_pressure_calibration"
         android:title="@string/setting_sea_level_pressure_calibration_title"
         android:summary="@string/setting_sea_level_pressure_calibration_summary"

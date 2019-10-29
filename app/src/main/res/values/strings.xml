@@ -9,9 +9,6 @@
     <string name="no_waypoints_in_gpx">GPX file doesn\'t contain waypoints.</string>
     <string name="loaded_waypoints">Loaded %d waypoints from GPX file.</string>
 
-    <string name="waypoint_button">Waypoint</string>
-    <string name="target_button">Target</string>
-
     <string name="waypoint_picker_clear_button">Clear</string>
     <string name="waypoints_search_hint">Search</string>
 
@@ -28,12 +25,6 @@
 
     <string name="setting_vertical_speed_low_pass_alpha_title">Vertical speed low-Pass filter ALPHA</string>
     <string name="setting_vertical_speed_low_pass_alpha_summary">Higher filters less. Default is 0.05.</string>
-
-    <string name="setting_vsi_smoothing_title">Vertical speed smoothing</string>
-    <string name="setting_vsi_smoothing_summary">Lower responds faster, higher is more stable. Around 30 usually works well.</string>
-
-    <string name="setting_sea_level_pressure_adjust_sensitivity_title">Sea level pressure adjustment sensitivity</string>
-    <string name="setting_sea_level_pressure_adjust_sensitivity_summary">Lower means more range but less accuracy. Default is 130.</string>
 
     <string name="setting_sea_level_pressure_calibration_title">Sea level pressure calibration</string>
     <string name="setting_sea_level_pressure_calibration_summary">This value is added to the displayed sea level pressure.</string>

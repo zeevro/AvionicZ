@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
@@ -68,7 +69,7 @@ import static android.view.View.OnTouchListener;
 //import org.json.JSONException;
 //import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnClickListener, OnTouchListener, SensorEventListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener, OnClickListener, SensorEventListener, LocationListener {
 
     private static final String TAG = "AvionicZ/Main";
 
@@ -103,13 +104,11 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private SharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView;
-    private Button pressureButton, waypointButton;
+    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView;
 
-    private float lastPressure, seaLevelPressureCalibration;
+    private float lastPressure, seaLevelPressureCalibration, pitchOffset, rollOffset, lastPitch, lastRoll;
     private long lastPressureTimestamp;
-    private int seaLevelPressure, tempSeaLevelPressure, seaLevelPressureAdjustSensitivity, vsiColorMax;
-    private boolean seaLevelPressureSliderChanged;
+    private int seaLevelPressure, vsiColorMax;
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
@@ -120,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private Location currentLocation = null, waypointLocation = new Location("waypoint");
 
+    private ArtificialHorizon artificialHorizon;
     private BearingArrow bearingArrow;
 
     private Drawable arrowDrawable;
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         waypoints = tempWaypoints;
         waypointLocation.reset();
-        waypointButton.setText(R.string.waypoint_button);
+        waypointView.setText("");
 
         Toast.makeText(this, String.format(getString(R.string.loaded_waypoints), tempWaypoints.size()), Toast.LENGTH_LONG).show();
     }
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         SharedPreferences.Editor prefs_editor = prefs.edit();
         prefs_editor.putInt("sea_level_pressure", seaLevelPressure);
         prefs_editor.apply();
-        pressureButton.setText(String.valueOf(seaLevelPressure));
+        pressureView.setText(String.valueOf(seaLevelPressure));
     }
 
     @SuppressLint("SetTextI18n")
@@ -252,8 +252,8 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         altView = findViewById(R.id.altitudeValue);
         altDecView = findViewById(R.id.altitudeDecimalValue);
         vsiView = findViewById(R.id.verticalSpeedValue);
-        pressureButton = findViewById(R.id.pressureButton);
-        waypointButton = findViewById(R.id.waypointButton);
+        pressureView = findViewById(R.id.pressureValue);
+        waypointView = findViewById(R.id.waypointText);
         bearingView = findViewById(R.id.bearingValue);
         distanceView = findViewById(R.id.distanceValue);
         etaView = findViewById(R.id.etaValue);
@@ -261,7 +261,8 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
 
-        pressureButton.setOnTouchListener(this);
+        ImageView horizonView = findViewById(R.id.artificialHorizon);
+        artificialHorizon = new ArtificialHorizon(horizonView);
 
         ImageView arrowView = findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
@@ -286,7 +287,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         if (!havePressureSensor) {
             vsiView.setText("---");
-            pressureButton.setEnabled(false);
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
 
@@ -297,12 +297,15 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     protected void onStart() {
         super.onStart();
 
-        if (havePressureSensor) {
-            SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-            if (sensorManager != null) {
+        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        if (sensorManager != null) {
+            if (havePressureSensor) {
                 Sensor pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
                 sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
             }
+
+            Sensor orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+            sensorManager.registerListener(this, orientationSensor, SensorManager.SENSOR_DELAY_UI);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -311,6 +314,9 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             onRequestPermissionsResult(0, new String[]{}, new int[]{PackageManager.PERMISSION_GRANTED});
         }
 
+        pitchOffset = rollOffset = lastPitch = lastRoll = 0;
+
+        artificialHorizon.setAttitude(0, 0);
         bearingArrow.startAnimation();
     }
 
@@ -322,10 +328,8 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
         locationManager.removeUpdates(this);
 
-        if (havePressureSensor) {
-            SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-            sensorManager.unregisterListener(this);
-        }
+        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensorManager.unregisterListener(this);
 
         bearingArrow.stopAnimation();
     }
@@ -333,21 +337,49 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        // Only pressure sensor updates were requested
+        switch (sensorEvent.sensor.getType()) {
+            case Sensor.TYPE_PRESSURE:
+                float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
 
-        float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
+                float altitude = m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressure));
 
-        float altitude = m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, pressure));
+                float vsi = vsiFilter.getOutput((altitude - m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, lastPressure))) / (sensorEvent.timestamp - lastPressureTimestamp));
+                lastPressure = pressure;
+                lastPressureTimestamp = sensorEvent.timestamp;
+                int verticalSpeed = (int) (vsi * 60000000000L);
 
-        float vsi = vsiFilter.getOutput((altitude - m2ft(SensorManager.getAltitude(seaLevelPressure + seaLevelPressureCalibration, lastPressure))) / (sensorEvent.timestamp - lastPressureTimestamp));
-        lastPressure = pressure;
-        lastPressureTimestamp = sensorEvent.timestamp;
-        int verticalSpeed = (int)(vsi * 60000000000L);
+                setAltitudeIndicator(altitude);
 
-        setAltitudeIndicator(altitude);
+                vsiView.setText(String.valueOf(verticalSpeed));
+                vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float) vsiColorMax));
 
-        vsiView.setText(String.valueOf(verticalSpeed));
-        vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float)vsiColorMax));
+                break;
+
+
+            case Sensor.TYPE_GAME_ROTATION_VECTOR:
+                float[] rotationMatrix = new float[9];
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, sensorEvent.values);
+
+                final int worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+                final int worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+
+                float[] adjustedRotationMatrix = new float[9];
+                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX, worldAxisForDeviceAxisY, adjustedRotationMatrix);
+
+                float[] orientation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+
+                // TODO: Find a way to rotate the rotation matrix by saving an origin matrix. This offset business doesn't work.
+                lastPitch = (float)Math.toDegrees(orientation[1]);
+                lastRoll = (float)Math.toDegrees(orientation[2]);
+
+                float pitch = pitchOffset - lastPitch;
+                float roll = rollOffset - lastRoll;
+
+                artificialHorizon.setAttitude(pitch, roll);
+
+                break;
+        }
     }
 
     @Override
@@ -359,7 +391,17 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             case R.id.settingsButton:
                 startActivity(new Intent(this, SettingsActivity.class)); break;
 
-            case R.id.pressureButton:
+            case R.id.artificialHorizon:
+//                Random rand = new Random();
+//                artificialHorizon.setAttitude(rand.nextFloat() * 100 - 50, rand.nextFloat() * 100 - 50); break;
+                pitchOffset = lastPitch;
+                rollOffset = lastRoll;
+                break;
+
+            case R.id.altitudeValue:
+            case R.id.altitudeDecimalValue:
+            case R.id.verticalSpeedValue:
+            case R.id.pressureValue:
                 final Dialog pressureWindow = new Dialog(this);
                 pressureWindow.setContentView(R.layout.pressure_window);
                 //noinspection ConstantConditions
@@ -433,7 +475,11 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 pressureWindow.show();
                 break;
 
-            case R.id.waypointButton:
+            case R.id.bearingArrow:
+            case R.id.bearingValue:
+            case R.id.etaValue:
+            case R.id.distanceValue:
+            case R.id.headingValue:
                 final Dialog waypointPicker = new Dialog(this);
                 waypointPicker.setContentView(R.layout.waypoint_picker);
 
@@ -452,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         WayPoint wpt = (WayPoint)parent.getItemAtPosition(position);
-                        waypointButton.setText(wpt.getName());
+                        waypointView.setText(wpt.getName());
                         waypointLocation.setLatitude(wpt.getLatitude());
                         waypointLocation.setLongitude(wpt.getLongitude());
                         waypointPicker.dismiss();
@@ -484,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                     @Override
                     public void onClick(View view) {
                         waypointLocation.reset();
-                        waypointButton.setText(R.string.waypoint_button);
+                        waypointView.setText("");
                         distanceView.setText("");
                         bearingView.setText("");
                         bearingArrow.setAngle(0);
@@ -497,32 +543,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouch(View view, MotionEvent evt) {
-        // Only pressureButton has an onTouch listener
-
-        switch (evt.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                tempSeaLevelPressure = seaLevelPressure;
-                seaLevelPressureSliderChanged = false;
-                return false;
-
-            case MotionEvent.ACTION_MOVE:
-                setSeaLevelPressure((int)(tempSeaLevelPressure - evt.getY() / seaLevelPressureAdjustSensitivity) + 1);
-                if (!seaLevelPressureSliderChanged) {
-                    Rect rect = new Rect();
-                    view.getHitRect(rect);
-                    seaLevelPressureSliderChanged = !rect.contains(view.getLeft() + (int)evt.getX(), view.getTop() + (int)evt.getY());
-                }
-                return true;
-
-            case MotionEvent.ACTION_UP:
-                return seaLevelPressureSliderChanged;
-        }
-        return false;
-    }
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String k) {
         Log.d(TAG, "onSharedPreferenceChanged: " + k + " = " + prefs.getAll().get(k));
@@ -531,8 +551,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 pressureFilter.setAlpha(getFloatPreference("altitude_low_pass_alpha", 0.25f)); break;
             case "vertical_speed_low_pass_alpha":
                 vsiFilter.setAlpha(getFloatPreference("vertical_speed_low_pass_alpha", 0.05f)); break;
-            case "sea_level_pressure_adjust_sensitivity":
-                seaLevelPressureAdjustSensitivity = getIntPreference("sea_level_pressure_adjust_sensitivity", 130); break;
             case "sea_level_pressure_calibration":
                 seaLevelPressureCalibration = getFloatPreference("sea_level_pressure_calibration", 0);
             case "vertical_speed_color_max":
