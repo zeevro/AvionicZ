@@ -20,7 +20,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
@@ -75,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             WayPoint wpt = getItem(position);
 
             TextView textView = myView.findViewById(R.id.waypoint_entry_text);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, getIntPreference("waypoint_list_font_size", 40));
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, prefs.getInt("waypoint_list_font_size", 40));
             textView.setText(wpt.getName());
             textView.setWidth(parent.getWidth());
 
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         }
     }
 
-    private SharedPreferences prefs;
+    private StringBackedSharedPreferences prefs;
 
     private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView;
 
@@ -115,31 +114,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     private Drawable arrowDrawable;
 
     private boolean havePressureSensor = false;
-
-    @SuppressWarnings("SameParameterValue")
-    protected String getStringPreference(String name, String default_value) {
-        String value = prefs.getString(name, null);
-        if ((value == null) || value.isEmpty()) {
-            return default_value;
-        }
-        return value;
-    }
-
-    protected float getFloatPreference(String name, float default_value) {
-        String value = prefs.getString(name, null);
-        if (value == null || value.isEmpty()) {
-            return default_value;
-        }
-        return Float.valueOf(value);
-    }
-
-    protected int getIntPreference(String name, int default_value) {
-        String value = prefs.getString(name, null);
-        if (value == null || value.isEmpty()) {
-            return default_value;
-        }
-        return Integer.valueOf(value);
-    }
 
     protected void loadWayPoints(Uri uri) {
         // TODO: Use GPXParser().parse(stream, new GpxFetchedAndParsed() { ... });
@@ -257,9 +231,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         arrowDrawable = getResources().getDrawable(R.drawable.arrow);
 
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, true);
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = ((MyApp)getApplication()).prefs;
         prefs.registerOnSharedPreferenceChangeListener(this);
         for (String k : prefs.getAll().keySet()) {
             onSharedPreferenceChanged(prefs, k);
@@ -268,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         vsiGradient = new ColorGradient(Color.RED, vsiView.getCurrentTextColor(), Color.GREEN);
 
-        String gpxFileUri = getStringPreference("gpx_file_uri", null);
+        String gpxFileUri = prefs.getString("gpx_file_uri", null);
         if (gpxFileUri != null) {
             loadWayPoints(Uri.parse(gpxFileUri));
         }
@@ -559,15 +531,15 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         Log.d(TAG, "onSharedPreferenceChanged: " + k + " = " + prefs.getAll().get(k));
         switch (k) {
             case "altitude_low_pass_alpha":
-                pressureFilter.setAlpha(getFloatPreference("altitude_low_pass_alpha", 0.25f)); break;
+                pressureFilter.setAlpha(prefs.getFloat("altitude_low_pass_alpha", 0.25f)); break;
             case "vertical_speed_low_pass_alpha":
-                vsiFilter.setAlpha(getFloatPreference("vertical_speed_low_pass_alpha", 0.05f)); break;
+                vsiFilter.setAlpha(prefs.getFloat("vertical_speed_low_pass_alpha", 0.05f)); break;
             case "sea_level_pressure_calibration":
-                seaLevelPressureCalibration = getFloatPreference("sea_level_pressure_calibration", 0);
+                seaLevelPressureCalibration = prefs.getFloat("sea_level_pressure_calibration", 0);
             case "vertical_speed_color_max":
-                vsiColorMax = getIntPreference("vertical_speed_color_max", 100); break;
+                vsiColorMax = prefs.getInt("vertical_speed_color_max", 100); break;
             case "gpx_file_uri":
-                String gpxFileUri = getStringPreference("gpx_file_uri", null);
+                String gpxFileUri = prefs.getString("gpx_file_uri", null);
                 if (gpxFileUri != null) {
                     loadWayPoints(Uri.parse(gpxFileUri));
                 }
