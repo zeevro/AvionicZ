@@ -1,50 +1,64 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
-        android:key="altitude_low_pass_alpha"
-        android:title="@string/setting_altitude_low_pass_alpha_title"
-        android:summary="@string/setting_altitude_low_pass_alpha_summary"
-        android:inputType="numberDecimal"
-        android:defaultValue="0.25"
-        android:selectAllOnFocus="true" />
-
-    <EditTextPreference
-        android:key="vertical_speed_low_pass_alpha"
-        android:title="@string/setting_vertical_speed_low_pass_alpha_title"
-        android:summary="@string/setting_vertical_speed_low_pass_alpha_summary"
-        android:inputType="numberDecimal"
-        android:defaultValue="0.05"
-        android:selectAllOnFocus="true" />
-
-    <EditTextPreference
-        android:key="sea_level_pressure_calibration"
-        android:title="@string/setting_sea_level_pressure_calibration_title"
-        android:summary="@string/setting_sea_level_pressure_calibration_summary"
+        app:key="sea_level_pressure_calibration"
+        app:title="@string/setting_sea_level_pressure_calibration_title"
+        app:summary="@string/setting_sea_level_pressure_calibration_summary"
         android:inputType="numberSigned|numberDecimal"
-        android:defaultValue="0"
+        app:defaultValue="0"
         android:selectAllOnFocus="true" />
 
-    <EditTextPreference
-        android:key="vertical_speed_color_max"
-        android:title="@string/setting_vertical_speed_color_max_title"
-        android:summary="@string/setting_vertical_speed_color_max_summary"
-        android:inputType="number"
-        android:defaultValue="100"
-        android:selectAllOnFocus="true" />
+    <PreferenceCategory app:title="Filter Tuning">
 
-    <EditTextPreference
-        android:key="waypoint_list_font_size"
-        android:title="@string/setting_waypoint_list_font_size_title"
-        android:summary="@string/setting_waypoint_list_font_size_summary"
-        android:inputType="number"
-        android:defaultValue="40"
-        android:selectAllOnFocus="true" />
+        <EditTextPreference
+            app:key="altitude_low_pass_alpha"
+            app:title="@string/setting_altitude_low_pass_alpha_title"
+            app:summary="@string/setting_altitude_low_pass_alpha_summary"
+            android:inputType="numberDecimal"
+            app:defaultValue="0.25"
+            android:selectAllOnFocus="true" />
 
-    <!--suppress AndroidDomInspection -->
-    <Preference
-        android:key="gpx_file_uri"
-        android:title="@string/setting_waypoint_file_title"
-        android:summary="@string/setting_waypoint_file_summary"
-        android:defaultValue="" />
+        <EditTextPreference
+            app:key="vertical_speed_low_pass_alpha"
+            app:title="@string/setting_vertical_speed_low_pass_alpha_title"
+            app:summary="@string/setting_vertical_speed_low_pass_alpha_summary"
+            android:inputType="numberDecimal"
+            app:defaultValue="0.05"
+            android:selectAllOnFocus="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Display">
+
+        <EditTextPreference
+            app:key="vertical_speed_color_max"
+            app:title="@string/setting_vertical_speed_color_max_title"
+            app:summary="@string/setting_vertical_speed_color_max_summary"
+            android:inputType="number"
+            app:defaultValue="100"
+            android:selectAllOnFocus="true" />
+
+        <EditTextPreference
+            app:key="waypoint_list_font_size"
+            app:title="@string/setting_waypoint_list_font_size_title"
+            app:summary="@string/setting_waypoint_list_font_size_summary"
+            android:inputType="number"
+            app:defaultValue="40"
+            android:selectAllOnFocus="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Navigation">
+
+        <!--suppress AndroidDomInspection -->
+        <Preference
+            app:key="gpx_file_uri"
+            app:title="@string/setting_waypoint_file_title"
+            app:summary="@string/setting_waypoint_file_summary"
+            app:defaultValue="" />
+
+    </PreferenceCategory>
 
 </PreferenceScreen>
