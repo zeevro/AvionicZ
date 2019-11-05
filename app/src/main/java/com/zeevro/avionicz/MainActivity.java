@@ -532,6 +532,13 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                     }
                 });
 
+                waypointPicker.findViewById(R.id.waypoints_cancel_button).setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        waypointPicker.dismiss();
+                    }
+                });
+
                 waypointPicker.show();
                 break;
         }
