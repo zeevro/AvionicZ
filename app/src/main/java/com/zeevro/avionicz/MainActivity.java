@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     private int seaLevelPressure, vsiColorMax;
     private boolean resetHorizon = false;
     private float[] horizonZero = new float[3];
+    private float slipZero = 0;
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
@@ -266,6 +267,9 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
             Sensor orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
             sensorManager.registerListener(this, orientationSensor, SensorManager.SENSOR_DELAY_UI);
+
+            Sensor slipSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(this, slipSensor, SensorManager.SENSOR_DELAY_UI);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -365,6 +369,13 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
                 //debugView.setText(debugStr.toString());
 
+                break;
+
+            case Sensor.TYPE_ACCELEROMETER:
+                if (resetHorizon) {
+                    slipZero = sensorEvent.values[0];
+                }
+                artificialHorizon.setSlip((slipZero - sensorEvent.values[0]) / 10);
                 break;
         }
     }

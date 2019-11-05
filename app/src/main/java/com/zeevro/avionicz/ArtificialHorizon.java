@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.widget.ImageView;
 
-public class ArtificialHorizon {
+class ArtificialHorizon {
     private ImageView imageView;
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -17,6 +17,7 @@ public class ArtificialHorizon {
 
     private float pitch = 0;
     private float roll = 0;
+    private float slip = 0;
 
     private void drawFrame() {
         final float w = mCanvas.getWidth(), h = mCanvas.getHeight();
@@ -25,7 +26,7 @@ public class ArtificialHorizon {
         mCanvas.drawColor(mSkyColor);
         mCanvas.save();
         mCanvas.rotate(roll, cX, cY);
-        mCanvas.translate(0, cY * (pitch / 90f));
+        mCanvas.translate(0, cY * (pitch / 45f));
         mCanvas.drawRect(-w, cY, w * 2f, h * 2f, mGroundPaint);
         mCanvas.restore();
         mCanvas.drawLine(w * 0.3f, cY, w * 0.4f, cY, mLinePaint);
@@ -34,6 +35,19 @@ public class ArtificialHorizon {
         mCanvas.drawLine(cX, cY, cX + w * 0.07f, cY + h * 0.02f, mLinePaint);
 
         //mCanvas.drawText(String.format("pitch: %f, roll: %f", pitch, roll), 0, mCanvas.getHeight() * 0.8f, mLinePaint);
+
+//        Test code for altitude tape
+//        mCanvas.clipRect(w - 100, cY + 15, w, cY + 60);
+//        mCanvas.drawText("10", w - 100, cY, mLinePaint);
+//        mCanvas.drawText("20", w - 100, cY + 25, mLinePaint);
+//        mCanvas.drawText("30", w - 100, cY + 50, mLinePaint);
+//        mCanvas.drawText("40", w - 100, cY + 75, mLinePaint);
+
+        mCanvas.drawCircle(cX + slip * (w * 0.4f), h * 0.9f, w * 0.04f, mLinePaint);
+        mCanvas.drawLine(cX - w * 0.05f, h * 0.86f, cX - w * 0.05f, h * 0.94f, mLinePaint);
+        mCanvas.drawLine(cX + w * 0.05f, h * 0.86f, cX + w * 0.05f, h * 0.94f, mLinePaint);
+        mCanvas.drawLine(w * 0.2f, h * 0.86f, w * 0.2f, h * 0.94f, mLinePaint);
+        mCanvas.drawLine(w * 0.8f, h * 0.86f, w * 0.8f, h * 0.94f, mLinePaint);
 
         imageView.setImageBitmap(mBitmap);
     }
@@ -57,6 +71,12 @@ public class ArtificialHorizon {
         if (pitch == this.pitch && roll == this.roll) return;
         this.pitch = pitch;
         this.roll = roll;
+        drawFrame();
+    }
+
+    void setSlip(float slip) {
+        if (slip == this.slip) return;
+        this.slip = slip;
         drawFrame();
     }
 
