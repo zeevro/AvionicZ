@@ -528,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                         waypointLocation.reset();
                         waypointView.setText("");
                         distanceView.setText("");
+                        etaView.setText("");
                         bearingView.setText("");
                         bearingArrow.setAngle(0);
                         waypointPicker.dismiss();
