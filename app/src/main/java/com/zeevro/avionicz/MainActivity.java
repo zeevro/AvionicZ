@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
+    private LowPassFilter slipFilter = new LowPassFilter(0.1f);
 
     private ArrayList<WayPoint> waypoints = new ArrayList<>();
 
@@ -265,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_UI);
             }
 
-            Sensor orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+            Sensor orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
             sensorManager.registerListener(this, orientationSensor, SensorManager.SENSOR_DELAY_UI);
 
             Sensor slipSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -326,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 break;
 
 
-            case Sensor.TYPE_GAME_ROTATION_VECTOR:
+            case Sensor.TYPE_ROTATION_VECTOR:
                 //StringBuilder debugStr = new StringBuilder();
 
                 //debugStr.append("raw: ");
@@ -372,10 +373,11 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 break;
 
             case Sensor.TYPE_ACCELEROMETER:
+                float slipValue = slipFilter.getOutput(sensorEvent.values[0]);
                 if (resetHorizon) {
-                    slipZero = sensorEvent.values[0];
+                    slipZero = slipValue;
                 }
-                artificialHorizon.setSlip((slipZero - sensorEvent.values[0]) / 10);
+                artificialHorizon.setSlip((slipZero - slipValue) / 4);
                 break;
         }
     }
