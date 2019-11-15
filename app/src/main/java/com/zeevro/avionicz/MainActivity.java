@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
-    private LowPassFilter slipFilter = new LowPassFilter(0.1f);
+    private LowPassFilter slipFilter = new LowPassFilter(0.12f);
 
     private ArrayList<WayPoint> waypoints = new ArrayList<>();
 
@@ -373,11 +373,12 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 break;
 
             case Sensor.TYPE_ACCELEROMETER:
-                float slipValue = slipFilter.getOutput(sensorEvent.values[0]);
+                float slipValue = sensorEvent.values[0];
                 if (resetHorizon) {
                     slipZero = slipValue;
                 }
-                artificialHorizon.setSlip((slipZero - slipValue) / 4);
+                slipValue = slipFilter.getOutput(sensorEvent.values[0]);
+                artificialHorizon.setSlip((slipZero - slipValue) / 2);
                 break;
         }
     }
