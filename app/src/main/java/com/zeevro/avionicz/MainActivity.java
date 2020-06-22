@@ -91,18 +91,17 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private StringBackedSharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView;
+    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView, debugView;
 
-    private float lastPressure, seaLevelPressureCalibration;
+    private float lastPressure, seaLevelPressureCalibration, slipZero, slipCoefficient;
     private long lastPressureTimestamp;
     private int seaLevelPressure, vsiColorMax;
     private boolean resetHorizon = false;
-    private float[] horizonZero = new float[3];
-    private float slipZero = 0;
+    private float[] horizon = new float[3];
 
     private LowPassFilter pressureFilter = new LowPassFilter();
     private LowPassFilter vsiFilter = new LowPassFilter();
-    private LowPassFilter slipFilter = new LowPassFilter(0.12f);
+    private LowPassFilter slipFilter = new LowPassFilter();
 
     private ArrayList<WayPoint> waypoints = new ArrayList<>();
 
@@ -222,11 +221,19 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         distanceView = findViewById(R.id.distanceValue);
         etaView = findViewById(R.id.etaValue);
         headingView = findViewById(R.id.headingValue);
+        debugView = findViewById(R.id.distanceValue);
 
         havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
 
         ImageView horizonView = findViewById(R.id.artificialHorizon);
         artificialHorizon = new ArtificialHorizon(horizonView);
+        horizonView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetHorizon = true;
+                return true;
+            }
+        });
 
         ImageView arrowView = findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
@@ -296,14 +303,37 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         bearingArrow.stopAnimation();
     }
 
-    /*private String angleVectStr(float[] vect) {
+/*
+    private String angleVectStr(float[] vect) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < 3; i++) {
             stringBuilder.append(' ');
             stringBuilder.append((int)Math.toDegrees(vect[i]));
         }
         return stringBuilder.substring(1);
-    }*/
+    }
+
+    private String vectStr(float[] vect) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (float n : vect) {
+            stringBuilder.append(' ');
+            stringBuilder.append(String.format("%.4f", n));
+        }
+        return stringBuilder.substring(1);
+    }
+
+    private float[] quaternion(float[] values) {
+        float theta_over_two = (float)Math.acos(values[3]);
+        float sin_theta_over_2 = (float)Math.sin(theta_over_two);
+
+        return new float[]{
+                2 * theta_over_two,
+                values[0] / sin_theta_over_2,
+                values[1] / sin_theta_over_2,
+                values[2] / sin_theta_over_2
+        };
+    }
+*/
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -328,10 +358,10 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
 
             case Sensor.TYPE_ROTATION_VECTOR:
-                //StringBuilder debugStr = new StringBuilder();
+//                StringBuilder debugStr = new StringBuilder();
 
-                //debugStr.append("raw: ");
-                //debugStr.append(angleVectStr(sensorEvent.values));
+//                debugStr.append("A: ");
+//                debugStr.append(vectStr(quaternion(sensorEvent.values)));
 
                 float[] rotationMatrix = new float[16];
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, sensorEvent.values);
@@ -342,43 +372,37 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 float[] adjustedRotationMatrix = new float[16];
                 SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX, worldAxisForDeviceAxisY, adjustedRotationMatrix);
 
-                float[] orientation = new float[3];
-                SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                float[] rotation = new float[3];
+                SensorManager.getOrientation(adjustedRotationMatrix, rotation);
 
-                //debugStr.append("\nremapped: ");
-                //debugStr.append(angleVectStr(orientation));
+//                debugStr.append("\nB: ");
+//                debugStr.append(angleVectStr(rotation));
 
                 if (resetHorizon) {
-                    horizonZero = new float[3];
                     for (int i = 0; i < 3; i++) {
-                        horizonZero[i] = -orientation[i];
+                        horizon[i] = rotation[i];
                     }
                     resetHorizon = false;
                 }
 
-                for (int i = 0; i < 3; i++) {
-                    orientation[i] += horizonZero[i];
-                }
+//                debugStr.append("\nC: ");
+//                debugStr.append(angleVectStr(rotation));
 
-                //debugStr.append("\ncallibrated: ");
-                //debugStr.append(angleVectStr(orientation));
-
-                float pitch = -(float)Math.toDegrees(orientation[1]);
-                float roll = -(float)Math.toDegrees(orientation[2]);
+                float pitch = -(float)Math.toDegrees(rotation[1] - horizon[1]);
+                float roll = -(float)Math.toDegrees(rotation[2] - horizon[2]);
 
                 artificialHorizon.setAttitude(pitch, roll);
 
-                //debugView.setText(debugStr.toString());
+//                debugView.setText(debugStr.toString());
 
                 break;
 
             case Sensor.TYPE_ACCELEROMETER:
-                float slipValue = sensorEvent.values[0];
+                float slipValue = slipFilter.getOutput(sensorEvent.values[0]);
                 if (resetHorizon) {
                     slipZero = slipValue;
                 }
-                slipValue = slipFilter.getOutput(sensorEvent.values[0]);
-                artificialHorizon.setSlip((slipZero - slipValue) / 2);
+                artificialHorizon.setSlip((slipZero - slipValue) * slipCoefficient);
                 break;
         }
     }
@@ -391,9 +415,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         switch (view.getId()) {
             case R.id.settingsButton:
                 startActivity(new Intent(this, SettingsActivity.class)); break;
-
-            case R.id.artificialHorizon:
-                resetHorizon = true; break;
 
             case R.id.altitudeValue:
             case R.id.altitudeDecimalValue:
@@ -552,6 +573,10 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String k) {
         Log.d(TAG, "onSharedPreferenceChanged: " + k + " = " + prefs.getAll().get(k));
         switch (k) {
+            case "slip_low_pass_alpha":
+                slipFilter.setAlpha(prefs.getFloat("slip_low_pass_alpha", 0.12f)); break;
+            case "slip_coefficient":
+                slipCoefficient = prefs.getFloat("slip_coefficient", 0.5f); break;
             case "altitude_low_pass_alpha":
                 pressureFilter.setAlpha(prefs.getFloat("altitude_low_pass_alpha", 0.25f)); break;
             case "vertical_speed_low_pass_alpha":

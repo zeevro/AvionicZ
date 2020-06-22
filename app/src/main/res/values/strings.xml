@@ -20,6 +20,12 @@
     <string name="eta_minutes">%dm%ds</string>
     <string name="eta_seconds">%ds</string>
 
+    <string name="setting_slip_low_pass_alpha_title">Slip indicator low-Pass filter ALPHA</string>
+    <string name="setting_slip_low_pass_alpha_summary">Higher filters less. Default is 0.12.</string>
+
+    <string name="setting_slip_coefficient_title">Slip indicator coefficient</string>
+    <string name="setting_slip_coefficient_summary">Higher makes the ball move further. Default is 0.5.</string>
+
     <string name="setting_altitude_low_pass_alpha_title">Altitude low-Pass filter ALPHA</string>
     <string name="setting_altitude_low_pass_alpha_summary">Higher filters less. Default is 0.25.</string>
 

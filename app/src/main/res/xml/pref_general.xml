@@ -1,6 +1,22 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
+        android:key="slip_low_pass_alpha"
+        android:title="@string/setting_slip_low_pass_alpha_title"
+        android:summary="@string/setting_slip_low_pass_alpha_summary"
+        android:inputType="numberDecimal"
+        android:defaultValue="0.12"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
+        android:key="slip_coefficient"
+        android:title="@string/setting_slip_coefficient_title"
+        android:summary="@string/setting_slip_coefficient_summary"
+        android:inputType="numberDecimal"
+        android:defaultValue="0.5"
+        android:selectAllOnFocus="true" />
+
+    <EditTextPreference
         android:key="altitude_low_pass_alpha"
         android:title="@string/setting_altitude_low_pass_alpha_title"
         android:summary="@string/setting_altitude_low_pass_alpha_summary"

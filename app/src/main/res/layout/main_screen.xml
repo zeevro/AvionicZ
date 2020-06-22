@@ -21,51 +21,52 @@
         android:id="@+id/artificialHorizon"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:onClick="onClick"
-        android:scaleType="fitCenter"
-        app:layout_constraintTop_toTopOf="parent"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/altitudeValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:includeFontPadding="false"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="100sp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/altitudeDecimalValue"
-        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="123" />
 
     <TextView
         android:id="@+id/altitudeDecimalValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:includeFontPadding="false"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="50sp"
-        app:layout_constraintTop_toTopOf="@id/altitudeValue"
         app:layout_constraintBottom_toBottomOf="@id/altitudeValue"
-        app:layout_constraintVertical_bias="0.75"
         app:layout_constraintLeft_toRightOf="@id/altitudeValue"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/altitudeValue"
+        app:layout_constraintVertical_bias="0.75"
         tools:text=".4" />
 
     <TextView
         android:id="@+id/verticalSpeedValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:includeFontPadding="false"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="60sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -76,15 +77,16 @@
         android:id="@+id/pressureValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
-        android:includeFontPadding="false"
-        android:textAlignment="center"
-        android:textSize="30sp"
         android:layout_marginRight="5dp"
+        android:includeFontPadding="false"
+        android:onClick="onClick"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="@id/verticalSpeedValue"
         app:layout_constraintRight_toRightOf="parent"
-        tools:text="pressure"
-        tools:ignore="RtlHardcoded" />
+        tools:ignore="RtlHardcoded"
+        tools:text="pressure" />
 
     <ImageView
         android:id="@+id/bearingArrow"
@@ -105,65 +107,70 @@
         android:layout_height="wrap_content"
         android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="40sp"
-        app:layout_constraintTop_toTopOf="@id/bearingArrow"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="@id/bearingArrow"
         app:layout_constraintRight_toRightOf="@id/bearingArrow"
-        app:layout_constraintWidth_percent="0.75"
+        app:layout_constraintTop_toTopOf="@id/bearingArrow"
         app:layout_constraintVertical_bias="0.75"
+        app:layout_constraintWidth_percent="0.75"
         tools:text="waypoint" />
 
     <TextView
         android:id="@+id/bearingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:layout_marginRight="5dp"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="40sp"
-        app:layout_constraintTop_toTopOf="@id/bearingArrow"
         app:layout_constraintRight_toRightOf="parent"
-        tools:text="bearing"
-        tools:ignore="RtlHardcoded" />
+        app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        tools:ignore="RtlHardcoded"
+        tools:text="bearing" />
 
     <TextView
         android:id="@+id/distanceValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:layout_marginLeft="5dp"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="40sp"
-        app:layout_constraintTop_toTopOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="parent"
-        tools:text="distance"
-        tools:ignore="RtlHardcoded" />
+        app:layout_constraintTop_toTopOf="@id/bearingArrow"
+        tools:ignore="RtlHardcoded"
+        tools:text="distance" />
 
     <TextView
         android:id="@+id/etaValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:layout_marginLeft="5dp"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="parent"
-        tools:text="eta"
-        tools:ignore="RtlHardcoded" />
+        tools:ignore="RtlHardcoded"
+        tools:text="eta" />
 
     <TextView
         android:id="@+id/headingValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:layout_marginRight="5dp"
+        android:onClick="onClick"
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@id/bearingArrow"
         app:layout_constraintRight_toRightOf="parent"
-        tools:text="heading"
-        tools:ignore="RtlHardcoded" />
+        tools:ignore="RtlHardcoded"
+        tools:text="heading" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
