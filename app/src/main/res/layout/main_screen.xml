@@ -18,14 +18,16 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/artificialHorizon"
+        android:id="@+id/vsiGauge"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:onClick="onClick"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@id/bearingArrow"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -38,9 +40,9 @@
         android:textColor="#000000"
         android:textSize="100sp"
         app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/altitudeDecimalValue"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/vsiGauge"
+        app:layout_constraintBottom_toBottomOf="@id/vsiGauge"
         tools:text="123" />
 
     <TextView
@@ -53,13 +55,14 @@
         android:textColor="#000000"
         android:textSize="50sp"
         app:layout_constraintBottom_toBottomOf="@id/altitudeValue"
-        app:layout_constraintLeft_toRightOf="@id/altitudeValue"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toRightOf="@id/vsiGauge"
+        android:layout_marginRight="10sp"
         app:layout_constraintTop_toTopOf="@id/altitudeValue"
         app:layout_constraintVertical_bias="0.75"
         tools:text=".4" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/verticalSpeedValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -83,7 +86,7 @@
         android:textAlignment="center"
         android:textColor="#000000"
         android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="@id/verticalSpeedValue"
+        app:layout_constraintBottom_toBottomOf="@id/vsiGauge"
         app:layout_constraintRight_toRightOf="parent"
         tools:ignore="RtlHardcoded"
         tools:text="pressure" />
@@ -94,7 +97,7 @@
         android:layout_height="0dp"
         android:onClick="onClick"
         android:scaleType="fitCenter"
-        app:layout_constraintTop_toBottomOf="@id/artificialHorizon"
+        app:layout_constraintTop_toBottomOf="@id/vsiGauge"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

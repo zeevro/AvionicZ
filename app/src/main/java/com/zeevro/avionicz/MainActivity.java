@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+//import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -91,26 +91,28 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
     private StringBackedSharedPreferences prefs;
 
-    private TextView altView, altDecView, vsiView, bearingView, distanceView, etaView, headingView, pressureView, waypointView, debugView;
+    private TextView altView, altDecView, /*vsiView,*/ bearingView, distanceView, etaView, headingView, pressureView, waypointView/*, debugView*/;
 
-    private float lastPressure, seaLevelPressureCalibration, slipZero, slipCoefficient;
+    private float lastPressure, seaLevelPressureCalibration/*, slipZero, slipCoefficient*/;
     private long lastPressureTimestamp;
-    private int seaLevelPressure, vsiColorMax;
-    private boolean resetHorizon = false;
-    private float[] horizon = new float[3];
+    private int seaLevelPressure/*, vsiColorMax*/;
+//    private boolean resetHorizon = false;
+//    private float[] horizon = new float[3];
 
-    private LowPassFilter pressureFilter = new LowPassFilter();
-    private LowPassFilter vsiFilter = new LowPassFilter();
-    private LowPassFilter slipFilter = new LowPassFilter();
+    private final LowPassFilter pressureFilter = new LowPassFilter();
+    private final LowPassFilter vsiFilter = new LowPassFilter();
+    private final LowPassFilter slipFilter = new LowPassFilter();
 
     private ArrayList<WayPoint> waypoints = new ArrayList<>();
 
-    private ColorGradient vsiGradient;
+//    private ColorGradient vsiGradient;
 
-    private Location currentLocation = null, waypointLocation = new Location("waypoint");
+    private Location currentLocation = null;
+    private final Location waypointLocation = new Location("waypoint");
 
-    private ArtificialHorizon artificialHorizon;
+//    private ArtificialHorizon artificialHorizon;
     private BearingArrow bearingArrow;
+    private VerticalSpeedGauge vsiGauge;
 
     private Drawable arrowDrawable;
 
@@ -214,26 +216,29 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
         altView = findViewById(R.id.altitudeValue);
         altDecView = findViewById(R.id.altitudeDecimalValue);
-        vsiView = findViewById(R.id.verticalSpeedValue);
+//        vsiView = findViewById(R.id.verticalSpeedValue);
         pressureView = findViewById(R.id.pressureValue);
         waypointView = findViewById(R.id.waypointText);
         bearingView = findViewById(R.id.bearingValue);
         distanceView = findViewById(R.id.distanceValue);
         etaView = findViewById(R.id.etaValue);
         headingView = findViewById(R.id.headingValue);
-        debugView = findViewById(R.id.distanceValue);
+//        debugView = findViewById(R.id.distanceValue);
 
         havePressureSensor = getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_BAROMETER);
 
-        ImageView horizonView = findViewById(R.id.artificialHorizon);
-        artificialHorizon = new ArtificialHorizon(horizonView);
-        horizonView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                resetHorizon = true;
-                return true;
-            }
-        });
+//        ImageView horizonView = findViewById(R.id.vsi);
+//        artificialHorizon = new ArtificialHorizon(horizonView);
+//        horizonView.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                resetHorizon = true;
+//                return true;
+//            }
+//        });
+
+        ImageView vsiGaugeView = findViewById(R.id.vsiGauge);
+        vsiGauge = new VerticalSpeedGauge(vsiGaugeView);
 
         ImageView arrowView = findViewById(R.id.bearingArrow);
         bearingArrow = new BearingArrow(arrowView);
@@ -247,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         }
         setSeaLevelPressure(prefs.getInt("sea_level_pressure", (int)SensorManager.PRESSURE_STANDARD_ATMOSPHERE));
 
-        vsiGradient = new ColorGradient(Color.RED, vsiView.getCurrentTextColor(), Color.GREEN);
+//        vsiGradient = new ColorGradient(Color.RED, vsiView.getCurrentTextColor(), Color.GREEN);
 
         String gpxFileUri = prefs.getString("gpx_file_uri", null);
         if (gpxFileUri != null) {
@@ -255,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         }
 
         if (!havePressureSensor) {
-            vsiView.setText("---");
+//            vsiView.setText("---");
             Toast.makeText(this, "No barometer found! Using GPS altitude.", Toast.LENGTH_LONG).show();
         }
     }
@@ -264,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     protected void onStart() {
         super.onStart();
 
-        artificialHorizon.setAttitude(0, 0);
+//        artificialHorizon.setAttitude(0, 0);
 
         SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -286,10 +291,10 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             onRequestPermissionsResult(0, new String[]{}, new int[]{PackageManager.PERMISSION_GRANTED});
         }
 
+        vsiGauge.startAnimation();
         bearingArrow.startAnimation();
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onStop() {
         super.onStop();
@@ -300,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         sensorManager.unregisterListener(this);
 
+        vsiGauge.stopAnimation();
         bearingArrow.stopAnimation();
     }
 
@@ -338,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
     @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
+        //noinspection SwitchStatementWithTooFewBranches
         switch (sensorEvent.sensor.getType()) {
             case Sensor.TYPE_PRESSURE:
                 float pressure = pressureFilter.getOutput(sensorEvent.values[0]);
@@ -351,59 +358,61 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
 
                 setAltitudeIndicator(altitude);
 
-                vsiView.setText(String.valueOf(verticalSpeed));
-                vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float) vsiColorMax));
+//                vsiView.setText(String.valueOf(verticalSpeed));
+//                vsiView.setTextColor(vsiGradient.colorForValue(verticalSpeed / (float) vsiColorMax));
+
+                vsiGauge.setVerticalSpeed(verticalSpeed);
 
                 break;
 
 
-            case Sensor.TYPE_ROTATION_VECTOR:
-//                StringBuilder debugStr = new StringBuilder();
-
-//                debugStr.append("A: ");
-//                debugStr.append(vectStr(quaternion(sensorEvent.values)));
-
-                float[] rotationMatrix = new float[16];
-                SensorManager.getRotationMatrixFromVector(rotationMatrix, sensorEvent.values);
-
-                final int worldAxisForDeviceAxisX = SensorManager.AXIS_X;
-                final int worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
-
-                float[] adjustedRotationMatrix = new float[16];
-                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX, worldAxisForDeviceAxisY, adjustedRotationMatrix);
-
-                float[] rotation = new float[3];
-                SensorManager.getOrientation(adjustedRotationMatrix, rotation);
-
-//                debugStr.append("\nB: ");
-//                debugStr.append(angleVectStr(rotation));
-
-                if (resetHorizon) {
-                    for (int i = 0; i < 3; i++) {
-                        horizon[i] = rotation[i];
-                    }
-                    resetHorizon = false;
-                }
-
-//                debugStr.append("\nC: ");
-//                debugStr.append(angleVectStr(rotation));
-
-                float pitch = -(float)Math.toDegrees(rotation[1] - horizon[1]);
-                float roll = -(float)Math.toDegrees(rotation[2] - horizon[2]);
-
-                artificialHorizon.setAttitude(pitch, roll);
-
-//                debugView.setText(debugStr.toString());
-
-                break;
-
-            case Sensor.TYPE_ACCELEROMETER:
-                float slipValue = slipFilter.getOutput(sensorEvent.values[0]);
-                if (resetHorizon) {
-                    slipZero = slipValue;
-                }
-                artificialHorizon.setSlip((slipZero - slipValue) * slipCoefficient);
-                break;
+//            case Sensor.TYPE_ROTATION_VECTOR:
+////                StringBuilder debugStr = new StringBuilder();
+//
+////                debugStr.append("A: ");
+////                debugStr.append(vectStr(quaternion(sensorEvent.values)));
+//
+//                float[] rotationMatrix = new float[16];
+//                SensorManager.getRotationMatrixFromVector(rotationMatrix, sensorEvent.values);
+//
+//                final int worldAxisForDeviceAxisX = SensorManager.AXIS_X;
+//                final int worldAxisForDeviceAxisY = SensorManager.AXIS_Z;
+//
+//                float[] adjustedRotationMatrix = new float[16];
+//                SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisForDeviceAxisX, worldAxisForDeviceAxisY, adjustedRotationMatrix);
+//
+//                float[] rotation = new float[3];
+//                SensorManager.getOrientation(adjustedRotationMatrix, rotation);
+//
+////                debugStr.append("\nB: ");
+////                debugStr.append(angleVectStr(rotation));
+//
+//                if (resetHorizon) {
+//                    for (int i = 0; i < 3; i++) {
+//                        horizon[i] = rotation[i];
+//                    }
+//                    resetHorizon = false;
+//                }
+//
+////                debugStr.append("\nC: ");
+////                debugStr.append(angleVectStr(rotation));
+//
+//                float pitch = -(float)Math.toDegrees(rotation[1] - horizon[1]);
+//                float roll = -(float)Math.toDegrees(rotation[2] - horizon[2]);
+//
+////                artificialHorizon.setAttitude(pitch, roll);
+//
+////                debugView.setText(debugStr.toString());
+//
+//                break;
+//
+//            case Sensor.TYPE_ACCELEROMETER:
+//                float slipValue = slipFilter.getOutput(sensorEvent.values[0]);
+//                if (resetHorizon) {
+//                    slipZero = slipValue;
+//                }
+////                artificialHorizon.setSlip((slipZero - slipValue) * slipCoefficient);
+//                break;
         }
     }
 
@@ -420,6 +429,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             case R.id.altitudeDecimalValue:
             case R.id.verticalSpeedValue:
             case R.id.pressureValue:
+            case R.id.vsiGauge:
                 final Dialog pressureWindow = new Dialog(this);
                 pressureWindow.setContentView(R.layout.pressure_window);
                 //noinspection ConstantConditions
@@ -448,7 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 pressureWindow.findViewById(R.id.buttonOk).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        setSeaLevelPressure(Integer.valueOf(pressureWindowText.getText().toString()));
+                        setSeaLevelPressure(Integer.parseInt(pressureWindowText.getText().toString()));
                         pressureWindow.dismiss();
                     }
                 });
@@ -477,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 pressureWindow.findViewById(R.id.buttonMinus).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.valueOf(pressureWindowText.getText().toString()) - 1));
+                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.parseInt(pressureWindowText.getText().toString()) - 1));
                         isEditing.set(false);
                     }
                 });
@@ -485,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
                 pressureWindow.findViewById(R.id.buttonPlus).setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.valueOf(pressureWindowText.getText().toString()) + 1));
+                        pressureWindowText.setText(String.format(Locale.getDefault(), "%d", Integer.parseInt(pressureWindowText.getText().toString()) + 1));
                         isEditing.set(false);
                     }
                 });
@@ -498,6 +508,7 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             case R.id.etaValue:
             case R.id.distanceValue:
             case R.id.headingValue:
+            case R.id.waypointText:
                 final Dialog waypointPicker = new Dialog(this);
                 waypointPicker.setContentView(R.layout.waypoint_picker);
 
@@ -575,16 +586,16 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         switch (k) {
             case "slip_low_pass_alpha":
                 slipFilter.setAlpha(prefs.getFloat("slip_low_pass_alpha", 0.12f)); break;
-            case "slip_coefficient":
-                slipCoefficient = prefs.getFloat("slip_coefficient", 0.5f); break;
+//            case "slip_coefficient":
+//                slipCoefficient = prefs.getFloat("slip_coefficient", 0.5f); break;
             case "altitude_low_pass_alpha":
                 pressureFilter.setAlpha(prefs.getFloat("altitude_low_pass_alpha", 0.25f)); break;
             case "vertical_speed_low_pass_alpha":
                 vsiFilter.setAlpha(prefs.getFloat("vertical_speed_low_pass_alpha", 0.05f)); break;
             case "sea_level_pressure_calibration":
                 seaLevelPressureCalibration = prefs.getFloat("sea_level_pressure_calibration", 0);
-            case "vertical_speed_color_max":
-                vsiColorMax = prefs.getInt("vertical_speed_color_max", 100); break;
+//            case "vertical_speed_color_max":
+//                vsiColorMax = prefs.getInt("vertical_speed_color_max", 100); break;
             case "gpx_file_uri":
                 String gpxFileUri = prefs.getString("gpx_file_uri", null);
                 if (gpxFileUri != null) {
@@ -599,7 +610,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
         if (result == PackageManager.PERMISSION_GRANTED) {
             LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
             try {
-                //noinspection ConstantConditions
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
             } catch (SecurityException ex) {
                 Toast.makeText(this, "GPS permission denied!", Toast.LENGTH_LONG).show();
@@ -629,12 +639,6 @@ public class MainActivity extends AppCompatActivity implements OnSharedPreferenc
             etaView.setText(getEtaString(calcEta(location.getSpeed(), distanceToWaypoint)));
             bearingArrow.setAngleDegrees(bearingToWaypoint);
         }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // TODO: Use this to put up a little accuracy/availability flag on the GUI.
-        Log.d(TAG, "Status: " + provider + ", " + status);
     }
 
     @Override
