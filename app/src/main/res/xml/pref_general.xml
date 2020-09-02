@@ -40,13 +40,13 @@
         android:defaultValue="0"
         android:selectAllOnFocus="true" />
 
-    <EditTextPreference
+    <!--<EditTextPreference
         android:key="vertical_speed_color_max"
         android:title="@string/setting_vertical_speed_color_max_title"
         android:summary="@string/setting_vertical_speed_color_max_summary"
         android:inputType="number"
         android:defaultValue="100"
-        android:selectAllOnFocus="true" />
+        android:selectAllOnFocus="true" />-->
 
     <EditTextPreference
         android:key="waypoint_list_font_size"
